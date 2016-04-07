@@ -1,0 +1,187 @@
+//Queue.h
+#ifndef __QUEUE_H__
+#define __QUEUE_H__
+
+#include <iostream>
+using namespace std;
+#include <cassert>
+
+template<typename T>
+struct Node
+{
+	T _data;
+	Node<T>* _next;
+	Node(const T& x) :_data(x), _next(NULL)
+	{}
+};
+
+template<typename T>
+class Queue
+{
+	friend std::ostream& operator<<<T>(std::ostream& _cout, const Queue<T>& qu);
+
+public:
+	Queue();
+	Queue(const Queue<T>& qu);
+	Queue<T>& operator=(const Queue<T>& qu);
+	~Queue();
+	void Push(const T& x);
+	void Pop();
+	T& Front()const;
+	T& Back()const;
+	size_t Size()const;
+	bool Empty()const;
+	void Swap(Queue<T>& qu);
+
+protected:
+	Node<T>* _head;
+	Node<T>* _tail;
+};
+
+template <typename T>
+std::ostream& operator<<(std::ostream& _cout, const Queue<T>& qu);
+
+#endif /*__QUEUE_H__*/
+
+//Queue.hpp
+#define _CRT_SECURE_NO_WARNINGS 1
+
+#include "QueueDataStruct.h"
+
+template <typename T>
+Queue<T>::Queue() :_head(NULL), _tail(NULL)
+{}
+
+template <typename T>
+Queue<T>::Queue(const Queue<T>& qu)
+{
+	Node<T>* cur = qu._head;
+	if (cur)
+	{
+		this->_head = new Node<T>(cur->_data);
+		cur = cur->_next;
+		Node<T>* tmp = this->_head;
+		while (cur)
+		{
+			Node<T>* next = new Node<T>(cur->_data);
+			tmp->_next = next;
+			tmp = next;
+			cur = cur->_next;
+		}
+		this->_tail = tmp;
+	}
+}
+
+template <typename T>
+Queue<T>& Queue<T>::operator=(const Queue<T>& qu)
+{
+	if (this->_head != qu._head)
+	{
+		this->~Queue();
+		Node<T>* cur = qu._head;
+		if (cur)
+		{
+			this->_head = new Node<T>(cur->_data);
+			cur = cur->_next;
+			Node<T>* tmp = this->_head;
+			while (cur)
+			{
+				Node<T>* next = new Node<T>(cur->_data);
+				tmp->_next = next;
+				tmp = next;
+				cur = cur->_next;
+			}
+			this->_tail = tmp;
+		}
+	}
+	return *this;
+}
+
+template <typename T>
+Queue<T>::~Queue()
+{
+	Node<T>* cur = this->_head;
+	while (cur)
+	{
+		Node<T>* del = cur;
+		cur = cur->_next;
+		delete del;
+		del = NULL;
+	}
+}
+
+template <typename T>
+void Queue<T>::Push(const T& x)
+{
+	if (_head == NULL)
+	{
+		this->_head = new Node<T>(x);
+		this->_tail = this->_head;
+	}
+	else
+	{
+		Node<T>* cur = new Node<T>(x);
+		this->_tail->_next = cur;
+		this->_tail = this->_tail->_next;
+	}
+}
+
+template <typename T>
+void Queue<T>::Pop()
+{
+	assert(this->_head);
+	Node<T>* del = this->_head->_next;
+	delete del;
+	del = NULL;
+}
+
+template <typename T>
+T& Queue<T>::Front()const
+{
+	return this->_head->_data;
+}
+
+template <typename T>
+T& Queue<T>::Back()const
+{
+	return this->_tail->_data;
+}
+
+template <typename T>
+size_t Queue<T>::Size()const
+{
+	size_t iCount = 0;
+	Node<T>* cur = this->_head;
+	while (cur)
+	{
+		++iCount;
+		cur = cur->_next;
+	}
+	return iCount;
+}
+
+template <typename T>
+bool Queue<T>::Empty()const
+{
+	return _head == NULL;
+}
+
+template <typename T>
+void Queue<T>::Swap(Queue<T>& qu)
+{
+	std::swap(this->_head, qu._head);
+	std::swap(this->_tail, qu._tail);
+}
+
+template <typename T>
+std::ostream& operator<<(std::ostream& _cout, const Queue<T>& qu)
+{
+	Node<T>* cur = qu._head;
+	while (cur)
+	{
+		_cout << cur->_data << "->";
+		cur = cur->_next;
+	}
+	_cout << "NULL" << endl;
+	return _cout;
+}
