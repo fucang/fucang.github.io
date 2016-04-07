@@ -1,0 +1,148 @@
+//Stack.h
+#ifndef __STACK_H__
+#define __STACK_H__
+
+#include <cassert>
+
+enum Type
+{
+	OP_NUM,
+	OP_SYMBOL,
+};
+
+enum Operat
+{
+	ADD,
+	SUB,
+	MUL,
+	DIV,
+};
+
+template <typename T>
+class Stack
+{
+public:
+	Stack();
+	~Stack();
+	Stack(const Stack<T>& st);
+	Stack<T>& operator=(const Stack<T>& st);
+	void Push(const T& x);
+	void Pop();
+	size_t Size()const;
+	T& Top()const;
+	bool Empty()const;
+	void Swap(Stack<T>& st);
+protected:
+	void _CheckCapacity();
+protected:
+	T* _array;
+	size_t _top;
+	size_t _capacity;
+};
+
+#endif /*__STACK_H__*/
+
+//Stack.hpp:
+#include "Stack.h"
+
+template <typename T>
+Stack<T>::Stack() :_array(NULL), _top(0), _capacity(0)
+{}
+
+template <typename T>
+Stack<T>::Stack(const Stack<T>& st) : _array(new T[st._top]), _top(0), _capacity(st._top)
+{
+	for (size_t i = 0; i < st._top; ++i)
+	{
+		_array[i] = st._array[i];
+	}
+	this->_top = st._top;
+}
+
+template <typename T>
+Stack<T>::~Stack()
+{
+	if (_array)
+	{
+		delete[] _array;
+	}
+	_top = 0;
+	_capacity = 0;
+}
+
+template <typename T>
+Stack<T>& Stack<T>::operator=(const Stack<T>& st)
+{
+	if (this != &st)
+	{
+		size_t stSize = st.Size();
+		T* tmp = new T[stSize];
+		for (size_t i = 0; i < stSize; ++i)
+		{
+			tmp[i] = st._array[i];
+		}
+		delete[] _array;
+		this->_top = stSize;
+		this->_capacity = stSize;
+	}
+	return *this;
+}
+
+template <typename T>
+void Stack<T>::Push(const T& x)
+{
+	this->_CheckCapacity();
+	this->_array[this->_top++] = x;
+}
+
+template <typename T>
+void Stack<T>::_CheckCapacity()
+{
+	if (_array == NULL)
+	{
+		this->_capacity = 3;
+		this->_array = new T[this->_capacity];
+		return;
+	}
+	this->_capacity *= 2;
+	T* tmp = new T[_capacity];
+	for (size_t i = 0; i < this->_top; ++i)
+	{
+		tmp[i] = this->_array[i];
+	}
+	delete[] this->_array;
+	this->_array = tmp;
+}
+
+template <typename T>
+void Stack<T>::Pop()
+{
+	assert(this->_top > 0);
+	--this->_top;
+}
+
+template <typename T>
+size_t Stack<T>::Size()const
+{
+	return this->_top;
+}
+
+template <typename T>
+T& Stack<T>::Top()const
+{
+	return this->_array[this->_top - 1];
+}
+
+template <typename T>
+bool Stack<T>::Empty()const
+{
+	return this->_top == 0;
+}
+
+template <typename T>
+void Stack<T>::Swap(Stack<T>& st)
+{
+	std::swap(this->_array, st._array);
+	std::swap(this->_top, st._top);
+	std::swap(this->_capacity, st._capacity);
+}
