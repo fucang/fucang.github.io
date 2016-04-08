@@ -1,0 +1,103 @@
+#include <iostream>
+using namespace std;
+
+#include <stack>
+#include <cassert>
+
+template <typename T>
+struct Node
+{
+	T _data;
+	Node<T>* _next;
+	Node(const T& x) :_data(x), _next(NULL)
+	{}
+};
+
+template <typename T>
+class LinkList
+{
+public:
+	LinkList() :_head(NULL), _tail(NULL)
+	{}
+	~LinkList()
+	{
+		Node<T>* cur = this->_head;
+		while (cur)
+		{
+			Node<T>* del = cur;
+			cur = cur->_next;
+			delete del;
+		}
+	}
+	//...
+	void PushBack(const T& x)
+	{
+		if (this->_head == NULL)
+		{
+			this->_head = new Node<T>(x);
+			this->_tail = this->_head;
+		}
+		else
+		{
+			Node<T>* cur = new Node<T>(x);
+			this->_tail->_next = cur;
+			this->_tail = this->_tail->_next;
+		}
+	}
+	Node<T>* GetHead()
+	{
+		return _head;
+	}
+	//...
+protected:
+	Node<T>* _head;
+	Node<T>* _tail;
+};
+
+void TailToHeadPrintRecurs(Node<int>* head)
+{
+	if (head)
+	{
+		TailToHeadPrintRecurs(head->_next);
+		cout << head->_data << " ";
+	}
+}
+
+void TailToHeadPrintUnRecurs(Node<int>* head)
+{
+	stack<Node<int>*> s;
+	Node<int>* cur = head;
+	while (cur)
+	{
+		s.push(cur);
+		cur = cur->_next;
+	}
+	while (!s.empty())
+	{
+		cout << s.top()->_data << " ";
+		s.pop();
+	}
+	cout << endl;
+}
+
+void test()
+{
+	LinkList<int> list;
+	list.PushBack(1);
+	list.PushBack(2);
+	list.PushBack(3);
+	list.PushBack(4);
+	list.PushBack(5);
+	cout << "递归法->: ";
+	TailToHeadPrintRecurs(list.GetHead());
+	cout << endl;
+	cout << "非递归法(利用栈)->: ";
+	TailToHeadPrintUnRecurs(list.GetHead());
+}
+
+int main()
+{
+	test();
+	system("pause");
+	return 0;
+}
