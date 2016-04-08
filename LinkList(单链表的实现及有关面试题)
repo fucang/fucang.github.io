@@ -1,0 +1,672 @@
+//LinkList.h
+#pragma once
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+
+typedef int DataType;
+typedef struct Node
+{
+	DataType _data;
+	struct Node* _next;
+}Node,*LinkList;
+
+void InitList(LinkList& head);/*初始化*/
+void PrintList(const LinkList& head);/*输出单链表*/
+void PushBack(LinkList& head, DataType data);/*尾插*/
+void PopBack(LinkList& head);/*尾删*/
+void PushFront(LinkList& head, DataType data);/*头插*/
+void PopFront(LinkList& head);/*头删*/
+Node* Find(const LinkList& head, DataType data);/*查找一个结点*/
+void AlterList(LinkList& head,DataType alter, DataType data);/*修改一个节点的数据域*/
+void Insert(LinkList& head, DataType insert, DataType data);/*在pos结点处插入一个结点*/
+void Erase(LinkList& head, DataType data);/*删除data*/
+void PrintReverse(const LinkList& head);/*从尾到头打印单链表*/
+void DelNoneTailNode(Node *pos);/*删除一个无头单链表的非尾结点*/
+void InsNoneFrontNode(Node *pos, DataType x);/*在无头单链表的一个非头结点前插入一个结点*/
+void ReverseNode(LinkList &head);/*反转单链表*/
+Node * FindMidNode(const LinkList& head);/*查找单链表的中间结点,只遍历一次链表*/
+Node* FindKNode(const LinkList& head, int k);/*返回倒数第k个结点,只遍历一次链表*/
+void BubbleSort(LinkList head);/*冒泡排序单链表*/
+void SelectSort(LinkList head);/*选择排序单链表*/
+Node *Joseph(LinkList head, size_t begin, size_t k);/*单链表实现约瑟夫环*/
+Node*  MergeList(LinkList headA, LinkList headB, LinkList& headC);/*合并有序单链表,使得合并后依然有序*/
+Node *LoopNodeLink(LinkList head);/*判断链表是否带环*/
+size_t LengthLoopLink(Node * meetingPoint);/*求带环链表的环的长度,并返回长度*/
+Node* EntryNodeLoopLink(LinkList head, Node* concur, size_t loopLength);/*求带环链表的入口结点*/
+Node* ListCurNoLoop(LinkList& headA, LinkList& headB);/*判断链表是否相交，若相交，求交点*/
+Node* ListCur(LinkList& headA, LinkList& headB);/*求链表的交点*/
+
+//LinkList.cpp
+#define _CRT_SECURE_NO_WARNINGS 1
+
+#include "LinkList.h"
+
+void InitList(LinkList& head)
+	/*初始化*/
+{
+	head = (Node*)malloc(sizeof(Node));
+	head->_next = NULL;
+}/*void InitList(LinkList& head)*/
+
+void PrintList(const LinkList& head)
+	/*输出单链表*/
+{
+	//1、head为空，错误，断言
+	//2、head->_next为空，即数据域全为空，直接返回
+	//3、输出数据，直到指针域为空
+	assert(head);
+	if (head->_next == NULL)
+	{
+		printf("NULL\n");
+		return;
+	}
+	Node* start = head->_next;
+	while (start)
+	{
+		printf("%d", start->_data);
+		start = start->_next;
+		if (start)
+		{
+			printf("->");
+		}
+	}/*while*/
+	printf("\n");
+}/*void PrintList(LinkList head)*/
+
+static Node* BuyNode(DataType data)
+	/*获得一个结点*/
+{
+	Node* tmp = (Node*)malloc(sizeof(Node));
+	tmp->_data = data;
+	tmp->_next = NULL;
+	return tmp;
+}/*static Node* BuyNode(DataType data)*/
+
+void PushBack(LinkList& head, DataType data)
+	/*尾插*/
+{
+	//1、防止head为空，应断言
+	//2、找指针域为空的前一个结点，插入数据
+	Node* tmp = head;
+	while (tmp->_next)
+	{
+		tmp = tmp->_next;
+	}
+	Node* index = BuyNode(data);
+	index->_next = tmp->_next;
+	tmp->_next = index;
+}/*void PushBack(LinkList& head, DataType data)*/
+
+void PopBack(LinkList& head)
+	/*尾删*/
+{
+	assert(head&&head->_next);
+	Node* front = head;
+	Node* tmp = head->_next;	
+	while (tmp->_next)
+	{
+		front = tmp;
+		tmp = tmp->_next;
+	}
+	front->_next = tmp->_next;
+	free(tmp);
+	tmp = NULL;
+}/*void PopBack(LinkList& head)*/
+
+void PushFront(LinkList& head, DataType data)
+	/*头插*/
+{
+	assert(head);
+	Node* index = BuyNode(data);
+	index->_next = head->_next;
+	head->_next = index;
+}/*void PushFront(LinkList& head, DataType data)*/
+
+void PopFront(LinkList& head)
+	/*头删*/
+{
+	assert(head&&head->_next);
+	Node* tmp = head->_next;
+	Node* next = tmp->_next;
+	head->_next = next;
+	free(tmp);
+	tmp = NULL;
+}/*void PopFront(LinkList& head)*/
+
+Node* Find(const LinkList& head, DataType data)
+	/*查找一个结点*/
+{
+	assert(head);
+	if (head->_next == NULL)
+	{
+		return NULL;
+	}
+	Node* tmp = head->_next;
+	while (tmp)
+	{
+		if (tmp->_data == data)
+		{
+			return tmp;
+		}
+		tmp = tmp->_next;
+	}
+	return NULL;
+}/*Node* Find(const LinkList& head, DataType data)*/
+
+void AlterList(LinkList& head, DataType alter, DataType data)
+	/*修改一个节点的数据域*/
+{
+	assert(head);
+	if (head->_next == NULL)
+	{
+		return;
+	}
+	Node* tmp = Find(head, alter);
+	if (tmp == NULL)
+	{
+		return;
+	}
+	tmp->_data = data;
+}/*void AlterList(LinkList& head, DataType alter, DataType data)*/
+
+void Insert(LinkList& head, DataType insert, DataType data)
+	/*在insert结点处插入一个结点*/
+{
+	assert(head);
+	Node* tmp = Find(head, insert);
+	if (tmp == NULL)
+	{
+		return;
+	}
+	Node* pInsert = BuyNode(tmp->_data);
+	tmp->_data = data;
+	Node* next = tmp->_next;
+	pInsert->_next = next;
+	tmp->_next = pInsert;
+}/*void Insert(LinkList& head, DataType insert, DataType data)*/
+
+void Erase(LinkList& head, DataType data)
+	/*删除data*/
+{
+	assert(head);
+	Node* tmp = Find(head, data);
+	if (tmp == NULL)
+	{
+		return;
+	}
+	Node* next = tmp->_next;
+	tmp->_data = next->_data;
+	tmp->_next = next->_next;
+	free(next);
+	next = NULL;
+}/*void Erase(LinkList& head, DataType data)*/
+
+void PrintReverse(const LinkList& head)
+	/*从尾到头打印单链表*/
+{
+	assert(head);
+	Node* tmp = head->_next;
+	if (tmp == NULL)
+	{
+		return;
+	}
+	if (tmp->_next)
+	{
+		PrintReverse(tmp);		
+	}
+	printf("%d->", tmp->_data);
+}/*void PrintReverse(const LinkList& head)*/
+
+void DelNoneTailNode(Node *pos)
+	/*删除一个无头单链表的非尾结点*/
+{
+	assert(pos);
+	Node* next = pos->_next;
+	pos->_data = next->_data;
+	pos->_next = next->_next;
+	free(next);
+	next = NULL;
+}/*void DelNoneTailNode(Node *pos)*/
+
+void InsNoneFrontNode(Node *pos, DataType x)
+	/*在无头单链表的一个非头结点前插入一个结点*/
+{
+	assert(pos);
+	Node* pInsert = BuyNode(pos->_data);
+	pos->_data = x;
+	pInsert->_next = pos->_next;
+	pos->_next = pInsert;
+}/*void InsNoneFrontNode(Node *pos, DataType x)*/
+
+void ReverseNode(LinkList &head)
+	/*反转单链表*/
+{
+	assert(head);
+	if (head->_next == NULL)
+	{
+		return;
+	}
+	Node* tmp = head->_next;
+	head->_next = NULL;
+	while (tmp)
+	{
+		Node* next = tmp->_next;
+		tmp->_next = head->_next;
+		head->_next = tmp;
+		tmp = next;
+	}
+}/*void ReverseNode(LinkList &head)*/
+
+Node * FindMidNode(const LinkList& head)
+	/*查找单链表的中间结点,只遍历一次链表*/
+{
+	//如果链表的长度为偶数，则返回后面的结点
+	assert(head);
+	Node* slow = head->_next;
+	Node* fast = head->_next;
+	while (fast&&fast->_next)
+	{
+		//如果链表的长度为偶数，则返回后面的结点
+		slow = slow->_next;
+		fast = fast->_next;
+		if (fast)
+		{
+			fast = fast->_next;
+		}
+		//如果链表的长度为偶数，则返回前面的结点
+		/*fast = fast->_next;
+		if (fast&&fast->_next)
+		{
+			slow = slow->_next;
+			fast = fast->_next;			
+		}*/
+	}
+	return slow;
+}/*Node * FindMidNode(const LinkList& head)*/
+
+Node* FindKNode(const LinkList& head, int k)
+	/*返回倒数第k个结点,只遍历一次链表*/
+{
+	assert(head);
+	Node* slow = head->_next;
+	Node* fast = head->_next;
+	while (k--)
+	{
+		if (fast == NULL)
+		{
+			return NULL;
+		}
+		fast = fast->_next;
+	}
+	while (fast)
+	{
+		slow = slow->_next;
+		fast = fast->_next;
+	}
+	return slow;
+}/*Node* FindKNode(const LinkList& head, int k)*/
+
+void BubbleSort(LinkList head)
+	/*冒泡排序单链表*/
+{
+	assert(head);
+	if (head->_next == NULL)
+	{
+		return;
+	}
+	Node* start = head->_next;
+	Node* tail = NULL;
+	bool flag = true;
+	while ((start != tail) && (flag))
+	{
+		Node* tmp = start;
+		flag = false;
+		while (tmp->_next != tail)
+		{
+			if (tmp->_data > tmp->_next->_data)
+			{
+				DataType x = tmp->_data;
+				tmp->_data = tmp->_next->_data;
+				tmp->_next->_data = x;
+				flag = true;
+			}
+			tmp = tmp->_next;
+		}
+		tail = tmp;
+	}
+}/*void BubbleSort(LinkList head)*/
+
+void SelectSort(LinkList head)
+	/*选择排序单链表*/
+{
+	assert(head);
+	Node* start = head->_next;
+	while (start->_next)
+	{
+		Node* min = start;
+		Node* tmp = start->_next;
+		while (tmp)
+		{
+			if (min->_data > tmp->_data)
+			{
+				min = tmp;
+			}
+			tmp = tmp->_next;
+		}
+		if (min != start)
+		{
+			DataType x = min->_data;
+			min->_data = start->_data;
+			start->_data = x;
+		}
+		start = start->_next;
+	}
+}/*void SelectSort(LinkList head)*/
+
+Node *Joseph(LinkList head, size_t begin, size_t k)
+	/*单链表实现约瑟夫环*/
+{
+	assert(head);
+	Node* start = head->_next;
+	while (--begin)
+	{
+		start = start->_next;
+		if (start == NULL)
+		{
+			return NULL;
+		}
+	}
+	size_t count = k;
+	while (start->_next != start)
+	{
+		while (--count)
+		{
+			start = start->_next;
+			if (start == NULL)
+			{
+				return NULL;
+			}
+		}
+		count = k;
+		//删除start
+		Node* next = start->_next;
+		start->_data = next->_data;
+		start->_next = next->_next;
+		free(next);
+		next = NULL;
+	} 
+	return start;
+}/*Node *Joseph(LinkList head, size_t begin, size_t k)*/
+
+Node*  MergeList(LinkList headA, LinkList headB, LinkList& headC)
+	/*合并有序单链表,使得合并后依然有序*/
+{
+	assert(headA);
+	assert(headB);
+	Node* beginA = headA->_next;
+	Node* beginB = headB->_next;
+	headC = headA;
+	headC->_next = NULL;
+	Node* beginC = headC;
+	while (beginA && beginB)
+	{
+		if (beginA->_data <= beginB->_data)
+		{
+			beginC->_next = beginA;	
+			beginA = beginA->_next;
+		}
+		else
+		{
+			beginC->_next = beginB;
+			beginB = beginB->_next;
+		}
+		beginC = beginC->_next;
+	}
+	if (beginA)
+	{
+		beginC->_next = beginA;
+	}
+	else if (beginB)
+	{
+		beginC->_next = beginB;
+	}
+	free(headB);
+	headB = NULL;
+	return headC;
+}/*Node*  MergeList(LinkList headA, LinkList headB, LinkList& headC)*/
+
+Node *LoopNodeLink(LinkList head)
+/*判断链表是否带环*/
+{
+	assert(head);
+	Node* begin = head->_next;
+	Node* slow = begin;
+	Node* fast = begin;
+	do 
+	{
+		if ((slow == NULL) || (fast == NULL))
+		{
+			return NULL;
+		}
+		slow = slow->_next;
+		fast = fast->_next;
+		if (fast == NULL)
+		{
+			return NULL;
+		}
+		fast = fast->_next;
+	}while(slow != fast);
+	return slow;
+}/*Node *LoopNodeLink(LinkList head)*/
+
+size_t LengthLoopLink(Node* meetingPoint)
+	/*求带环链表的环的长度,并返回长度*/
+{
+	assert(meetingPoint);
+	Node* tmp = meetingPoint;
+	size_t count = 1;
+	while (tmp->_next != meetingPoint)
+	{
+		++count;
+		tmp = tmp->_next;
+	}
+	return count;
+}/*size_t LengthLoopLink(Node * meetingPoint)*/
+
+
+Node *EntryNodeLoopLink(LinkList head,Node* concur, size_t loopLength)
+	/*求带环链表的入口结点*/
+{
+	assert(head);
+	assert(concur);
+	//x+y=交点前面的长度
+	//z+y=交点后面的长度
+	//二者做差
+	Node* front = head->_next;
+	Node* tail = concur;
+	Node* tmp = front;
+	size_t frontList = 0;
+	while (tmp != concur)
+	{
+		++frontList;
+		tmp = tmp->_next;
+	}
+	int mulLen = (int)frontList - (int)loopLength;
+	if (mulLen > 0)
+	{
+		while (mulLen--)
+		{
+			front = front->_next;
+		}
+	}
+	else if (mulLen < 0)
+	{
+		while (mulLen++)
+		{
+			tail = tail->_next;
+		}
+	}
+	while (front != tail)
+	{
+		front = front->_next;
+		tail = tail->_next;
+	}
+	return front;
+}/*Node *EntryNodeLoopLink(LinkList head,Node* concur, size_t loopLength)*/
+
+static size_t FrontLength(LinkList head, Node* concur)
+/*求入口点之前的长度*/
+{
+	assert(head);
+	assert(concur);
+	size_t len = 0;
+	Node* begin = head->_next;
+	while (begin != concur)
+	{
+		++len;
+		begin = begin->_next;
+	}
+	return len;
+
+}
+static size_t LengthHaveLoopLink(LinkList head, Node* concur)
+/*求带环单链表的长度*/
+{
+	return 0;
+}
+
+static size_t ListLength(LinkList& head)
+	/*求链表的长度*/
+{
+	assert(head);
+	Node* begin = head->_next;
+	size_t count = 0;
+	while (begin)
+	{
+		begin = begin->_next;
+		++count;
+	}
+	return count;
+}
+
+Node* ListCurNoLoop(LinkList& headA, LinkList& headB)
+	/*判断链表是否相交，若相交，求交点*/
+{
+	//假定链表不带环
+	assert(headA);
+	assert(headB);
+	Node* beginA = headA->_next;
+	Node* beginB = headB->_next;
+	size_t lenA = ListLength(headA);
+	size_t lenB = ListLength(headB);
+	int munLen = (int)lenA - (int)lenB;
+	if (munLen > 0)
+	{
+		while (munLen--)
+		{
+			beginA = beginA->_next;
+		}
+	}
+	else if (munLen < 0)
+	{
+		while (munLen++)
+		{
+			beginB = beginB->_next;
+		}
+	}
+	while (beginA != beginB)
+	{
+		beginA = beginA->_next;
+		beginB = beginB->_next;
+	}
+	return beginA;
+}/*Node* ListCur(LinkList& headA, LinkList& headB)*/
+
+Node* ListCur(LinkList& headA, LinkList& headB)
+	/*求链表的交点*/
+{
+	assert(headA);
+	assert(headB);
+	Node* entryA = LoopNodeLink(headA);
+	Node* entryB = LoopNodeLink(headB);
+	Node* concur = NULL;
+	if ((entryA == NULL) && (entryB == NULL))
+		/*两个都不带环*/
+	{
+		concur = ListCurNoLoop(headA, headB);
+	}/*if ((curA == NULL) && (curB == NULL))*/
+	else if (((entryA == NULL) && (entryB != NULL))
+		|| ((entryA != NULL) && (entryB == NULL)))
+		/*一个带环，一个不带环，肯定没交点*/
+	{
+		concur = NULL;
+	}
+	else
+		/*两个都带环*/
+		//entryA!=NULL && entryB!=NULL 
+	{
+		size_t loopA = LengthLoopLink(entryA);
+		size_t loopB = LengthLoopLink(entryB);
+
+		Node* beginA = headA->_next;
+		Node* beginB = headB->_next;
+
+		/*入口点*/
+		Node* curA = EntryNodeLoopLink(headA, entryA, loopA);
+		Node* curB = EntryNodeLoopLink(headB, entryB, loopB);
+
+		size_t frontA = FrontLength(headA, curA);
+		size_t frontB = FrontLength(headB, curB);
+
+		size_t lenA = frontA + loopA;
+		size_t lenB = frontB + loopB;	
+
+		if (curA == curB)
+			/*两个环的入口点相同*/
+		{
+			int mulLen = (int)frontA - (int)frontB;
+			if (mulLen > 0)
+			{
+				while (mulLen--)
+				{
+					beginA = beginA->_next;
+				}
+			}
+			else if (mulLen < 0)
+			{
+				while (mulLen++)
+				{
+					beginB = beginB->_next;
+				}
+			}/*if mulLen > 0*/
+			while (beginA != beginB)
+			{
+				beginA = beginA->_next;
+				beginB = beginB->_next;
+			}
+			concur = beginA;
+		}/*if (curA == curB)*/
+		else
+			/*两个带环链表的入口点不同*/
+		{
+			//从交点走，如果能从一个入口点到另一个入口点，则相交，否则，不相交
+			Node* tmp = curA;
+			while (tmp->_next != curA&&tmp != curB)
+			{
+				tmp = tmp->_next;
+			}
+			if (tmp->_next == curA)
+			{
+				concur = NULL;
+			}
+			else
+			{
+				printf("第一个交点为:> %p\t%d\n", curA, curA->_data);
+				printf("第二个交点为:> %p\t%d\n", curB, curB->_data);
+				concur = curA;/*返回第一个*/
+			}
+		}
+	}/*else两个都带环*/
+	return concur;
+}
