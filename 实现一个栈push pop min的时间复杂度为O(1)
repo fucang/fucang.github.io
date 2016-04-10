@@ -7,7 +7,7 @@ public:
 	~StackMin();
 	void Push(const T& x);
 	void Pop();
-	T& Min()const;
+	const T& Min()const;
 protected:
 	std::stack<T> _data;
 	std::stack<T> _min;
@@ -41,7 +41,7 @@ void StackMin<T>::Pop()
 	this->_min.pop();
 }
 template <typename T>
-T& StackMin<T>::Min()const
+const T& StackMin<T>::Min()const
 {
 	assert(this->_data.empty() && this->_min.empty());
 	return this->_min.top();
