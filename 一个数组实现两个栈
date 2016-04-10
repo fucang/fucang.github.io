@@ -8,7 +8,7 @@ public:
 	~OneArrayToTwoStack();
 	void Push(int index, const T& x);
 	void Pop(int index);
-	T& Top(int index)const;
+	const T& Top(int index)const;
 	size_t Size(int index)const;
 	bool Empty(int index);
 protected:
@@ -66,7 +66,7 @@ void OneArrayToTwoStack<T>::Pop(int index)
 	}
 }
 template <typename T>
-T& OneArrayToTwoStack<T>::Top(int index)const
+const T& OneArrayToTwoStack<T>::Top(int index)const
 {
 	assert(index == 1 || index == 2);
 	if (index == 1)
