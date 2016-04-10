@@ -7,8 +7,8 @@ public:
 	~TwoStackToQueue();
 	void PushQueue(const T& x);
 	void PopQueue();
-	T& FrontQueue()const;
-	T& BackQueue()const;
+	const T& FrontQueue()const;
+	const T& BackQueue()const;
 	bool EmptyQueue()const;
 	size_t SizeQueue()const;
 protected:
@@ -44,12 +44,12 @@ void TwoStackToQueue<T>::PopQueue()
 	this->_outStack.pop();
 }
 template <typename T>
-T& TwoStackToQueue<T>::FrontQueue()const
+const T& TwoStackToQueue<T>::FrontQueue()const
 {
 	return this->_outStack.top();
 }
 template <typename T>
-T& TwoStackToQueue<T>::BackQueue()const
+const T& TwoStackToQueue<T>::BackQueue()const
 {
 	return this->_inStack.top();
 }
