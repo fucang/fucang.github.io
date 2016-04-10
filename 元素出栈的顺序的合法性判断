@@ -1,0 +1,28 @@
+bool PopStackValid(const int* push, const int* pop, size_t size)
+{
+	//1, 2, 4, 3, 5, 6, 7
+	//6, 5, 4, 3, 1, 7, 2 
+	assert(push&&pop);
+	stack<int> s;
+	size_t iPushCount = 0;
+	size_t iPopCount = 0;
+	while (iPushCount < size)
+	{
+		if (s.empty() || s.top() != pop[iPopCount])
+		{
+			s.push(push[iPushCount]);
+			++iPushCount;
+		}
+		else if (!s.empty() && s.top() == pop[iPopCount])
+		{
+			s.pop();
+			++iPopCount;
+		}
+	}
+	while (!s.empty() && s.top() == pop[iPopCount])
+	{
+		s.pop();
+		++iPopCount;
+	}
+	return s.empty();
+}
