@@ -1,0 +1,136 @@
+//一个数组实现两个栈
+//.h:
+template <typename T>
+class OneArrayToTwoStack
+{
+public:
+	OneArrayToTwoStack();
+	~OneArrayToTwoStack();
+	void Push(int index, const T& x);
+	void Pop(int index);
+	T& Top(int index)const;
+	size_t Size(int index)const;
+	bool Empty(int index);
+protected:
+	void _CheckCapacity();
+protected:
+	T* _array;
+	size_t _size;
+	size_t _topFirst;
+	size_t _topSecend;
+};
+
+//.hpp:
+template <typename T>
+OneArrayToTwoStack<T>::OneArrayToTwoStack() :_array(NULL), _size(0), _topFirst(0), _topSecend(0)
+{}
+template <typename T>
+OneArrayToTwoStack<T>:: ~OneArrayToTwoStack()
+{
+	if (this->_array)
+	{
+		delete[] this->_array;
+		this->_array = NULL;
+	}
+	this->_size = 0;
+	this->_topFirst = 0;
+	this->_topSecend = 0;
+}
+template <typename T>
+void OneArrayToTwoStack<T>::Push(int index, const T& x)
+{
+	this->_CheckCapacity();
+	assert(index == 1 || index == 2);
+	if (index == 1)
+	{
+		this->_array[this->_topFirst++] = x;
+	}
+	else
+	{
+		this->_array[this->_topSecend--] = x;
+	}
+}
+template <typename T>
+void OneArrayToTwoStack<T>::Pop(int index)
+{
+	assert(index == 1 || index == 2);
+	if (index == 1)
+	{
+		assert(this->_topFirst > 0);//看栈1是否为空
+		--this->_topFirst;
+	}
+	else
+	{
+		assert(this->_topSecend < this->_size - 1);
+		++this->_topSecend;
+	}
+}
+template <typename T>
+T& OneArrayToTwoStack<T>::Top(int index)const
+{
+	assert(index == 1 || index == 2);
+	if (index == 1)
+	{
+		assert(this->_topFirst > 0);//看栈1是否为空
+		return this->_array[this->_topFirst - 1];
+	}
+	else
+	{
+		assert(this->_topSecend < this->_size - 1);
+		return this->_array[this->_topSecend + 1];
+	}
+}
+template <typename T>
+bool OneArrayToTwoStack<T>::Empty(int index)
+{
+	assert(index == 1 || index == 2);
+	if (index == 1)
+	{
+		return this->_topFirst == 0;
+	}
+	else
+	{
+		return this->_topSecend == this->_size - 1;
+	}
+}
+template <typename T>
+size_t OneArrayToTwoStack<T>::Size(int index)const
+{
+	assert(index == 1 || index == 2);
+	if (index == 1)
+	{
+		return this->_topFirst;
+	}
+	else
+	{
+		return this->_size - this->_topSecend - 1;
+	}
+}
+template <typename T>
+void OneArrayToTwoStack<T>::_CheckCapacity()
+{
+	if (this->_array == NULL)
+	{
+		this->_size = 10;
+		this->_array = new T[10];
+		this->_topFirst = 0;
+		this->_topSecend = this->_size - 1;
+		return;
+	}
+	if(this->_topFirst - 1 == this->_topSecend)//空间不够了
+	{
+		T* tmp = new T[this->_size * 2];
+		for (size_t i = 0; i < _topFirst; ++i)
+		{
+			tmp[i] = this->_array[i];
+		}
+		for (size_t i = this->_size - 1; i>this->_topSecend; --i)
+		{
+			tmp[i + this->_size] = this->_array[i];
+		}
+		delete[] this->_array;
+		this->_array = tmp;
+		this->_topSecend += this->_size;
+		this->_size *= 2;
+	}
+}
