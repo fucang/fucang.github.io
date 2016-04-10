@@ -1,0 +1,65 @@
+//.h
+template <typename T>
+class TwoStackToQueue
+{
+public:
+	TwoStackToQueue();
+	~TwoStackToQueue();
+	void PushQueue(const T& x);
+	void PopQueue();
+	T& FrontQueue()const;
+	T& BackQueue()const;
+	bool EmptyQueue()const;
+	size_t SizeQueue()const;
+protected:
+	std::stack<T> _inStack;
+	std::stack<T> _outStack;
+};
+
+//.hpp
+//两个栈实现一个队列
+template <typename T>
+TwoStackToQueue<T>::TwoStackToQueue()
+{}
+template <typename T>
+TwoStackToQueue<T>::~TwoStackToQueue()
+{}
+template <typename T>
+void TwoStackToQueue<T>::PushQueue(const T& x)
+{
+	this->_inStack.push(x);
+}
+template <typename T>
+void TwoStackToQueue<T>::PopQueue()
+{
+	assert(this->_inStack.empty() && this->_outStack.empty());
+	if (this->_outStack.empty())
+	{
+		while (!this->_inStack.empty())
+		{
+			this->outStack.push(this->_inStack.top());
+			this->_inStack.pop();
+		}
+	}
+	this->_outStack.pop();
+}
+template <typename T>
+T& TwoStackToQueue<T>::FrontQueue()const
+{
+	return this->_outStack.top();
+}
+template <typename T>
+T& TwoStackToQueue<T>::BackQueue()const
+{
+	return this->_inStack.top();
+}
+template <typename T>
+bool TwoStackToQueue<T>::EmptyQueue()const
+{
+	return this->_inStack.empty() && this->_outStack.empty();
+}
+template <typename T>
+size_t TwoStackToQueue<T>::SizeQueue()const
+{
+	return this->_inStack.size() + this->_outStack.size();
+}
