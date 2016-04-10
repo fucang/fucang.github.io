@@ -27,8 +27,8 @@ public:
 	~Queue();
 	void Push(const T& x);
 	void Pop();
-	T& Front()const;
-	T& Back()const;
+	const T& Front()const;
+	const T& Back()const;
 	size_t Size()const;
 	bool Empty()const;
 	void Swap(Queue<T>& qu);
@@ -136,13 +136,13 @@ void Queue<T>::Pop()
 }
 
 template <typename T>
-T& Queue<T>::Front()const
+const T& Queue<T>::Front()const
 {
 	return this->_head->_data;
 }
 
 template <typename T>
-T& Queue<T>::Back()const
+const T& Queue<T>::Back()const
 {
 	return this->_tail->_data;
 }
