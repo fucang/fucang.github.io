@@ -1,0 +1,66 @@
+template <typename T>
+class SymmetryMatrix
+{
+public:
+	SymmetryMatrix(const T* array, size_t size);
+	~SymmetryMatrix();
+	void Display()const;
+protected:
+	T* _array;
+	size_t _size;
+};
+
+//.hpp
+template <typename T>
+SymmetryMatrix<T>::SymmetryMatrix(const T* array, size_t size)
+:_array(new T[size*(size+1)/2])
+, _size(size*(size + 1)/2)
+{
+	assert(array);
+	size_t iCount = 0;
+	for (int i = 0; i < size; ++i)
+	{
+		for (int j = 0; j < size; ++j)
+		{
+			if (i >= j)
+			{
+				this->_array[iCount++] = array[i*size + j];
+			}
+			else
+			{
+				break;
+			}
+		}
+	}//for i
+
+}
+
+template <typename T>
+SymmetryMatrix<T>::~SymmetryMatrix()
+{
+	if (this->_array)
+	{
+		delete[] this->_array;
+	}
+	this->_size = 0;
+}
+
+template <typename T>
+void SymmetryMatrix<T>::Display()const
+{
+	for (int i = 0; i < size; ++i)
+	{
+		for (int j = 0; j < size; ++j)
+		{
+			if (i >= j)
+			{
+				cout << this->_array[i*(i + 1) / 2 + j] << "  ";
+			}
+			else
+			{
+				cout << this->_array[j*(j + 1) / 2 + i] << "  ";
+			}
+		}
+		cout << endl;
+	}
+}
