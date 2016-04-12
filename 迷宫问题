@@ -1,0 +1,124 @@
+struct Pos
+{
+	int _row;
+	int _col;
+};
+
+void GetMaze(int* &a, int& row, int& col)
+{
+	std::FILE* fileMaze = fopen("C:\\Users\\朱潇翔\\Desktop\\迷宫.txt", "r");
+	assert(fileMaze);
+	char ch = 0;
+	while (true)
+	{
+		ch = fgetc(fileMaze);
+		if (ch == ' ' || ch == '\n')
+		{
+			break;
+		}
+		row = row * 10 + ch - '0';
+	}
+	while (true)
+	{
+		ch = fgetc(fileMaze);
+		if (ch == ' ' || ch == '\n')
+		{
+			break;
+		}
+		col = col * 10 + ch - '0';
+	}
+	a = new int[row * col];
+	for (int i = 0; i < row; ++i)
+	{
+		for (int j = 0; j < col;)
+		{
+			ch = fgetc(fileMaze);
+			if (ch == '1' || ch == '0')
+			{
+				a[i*col + j] = ch - '0';
+				++j;
+			}
+		}
+	}
+	fclose(fileMaze);
+}
+void PrintMaze(int* maze, int row, int col)
+{
+	for (int i = 0; i < row; ++i)
+	{
+		for (int j = 0; j < col; ++j)
+		{
+			cout << maze[i*col + j] << " ";
+		}
+		cout << endl;
+	}
+}
+/*10 10
+1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1
+0 0 0 1 1 1 1 1 1 1
+1 1 0 1 1 1 1 1 1 1
+1 1 0 1 1 1 1 1 1 1
+1 1 0 1 1 1 1 1 1 1
+1 1 0 0 0 0 0 0 1 1
+1 1 0 1 1 1 1 0 1 1
+1 1 0 1 1 1 1 0 1 1
+1 1 0 1 1 1 1 1 1 1*/
+bool SearchMazePath(int* maze, int row, int col, Pos enrty,
+	std::stack<Pos>& paths)
+{
+	assert(maze);
+	paths.push(enrty);
+	while (!paths.empty())
+	{
+		Pos cur = paths.top();
+		maze[cur._row*col + cur._col] = 2;
+		if (cur._row == row - 1)
+		{
+			return true;
+		}
+		//左
+		Pos next = cur;
+		--next._col;
+		if (next._row >= 0 && next._row < row
+			&&next._col >= 0 && next._col < col
+			&&maze[next._row * col + next._col] == 0)
+		{
+			paths.push(next);
+			continue;
+		}
+		//右
+		next = cur;
+		++next._col;
+		if (next._row >= 0 && next._row < row
+			&&next._col >= 0 && next._col < col
+			&&maze[next._row * col + next._col] == 0)
+		{
+			paths.push(next);
+			continue;
+		}
+		//上
+		next = cur;
+		--next._row;
+		if (next._row >= 0 && next._row < row
+			&&next._col >= 0 && next._col < col
+			&&maze[next._row * col + next._col] == 0)
+		{
+			paths.push(next);
+			continue;
+		}
+		//下
+		next = cur; 
+		++next._row;
+		if (next._row >= 0 && next._row < row
+			&&next._col >= 0 && next._col < col
+			&&maze[next._row * col + next._col] == 0)
+		{
+			paths.push(next);
+			continue;
+		}
+		maze[paths.top()._row * col + paths.top()._col] = 3;
+		paths.pop();
+	}
+	return false;
+}
