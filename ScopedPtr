@@ -1,0 +1,80 @@
+#include <iostream>
+using namespace std;
+
+template <typename T>
+struct Node
+{
+	Node(const T data = 0) :_data(data), _next(NULL)
+	{}
+	T _data;
+	Node* _next;
+};
+
+template <typename T>
+class AutoPtr
+{
+public:
+	AutoPtr();
+	AutoPtr(T* ptr);
+	AutoPtr(AutoPtr<T>& ap);
+	AutoPtr<T>& operator=(AutoPtr<T>& ap);
+	~AutoPtr();
+	T& operator*()const; 
+	T* operator->()const;
+	T* GetStr()const;
+protected:
+	T* _ptr;
+};
+
+template <typename T>
+AutoPtr<T>::AutoPtr() : _ptr(NULL)
+{}
+
+template <typename T>
+AutoPtr<T>::AutoPtr(T* ptr) : _ptr(ptr)//不能写成const T* ptr，因为否则为const类型的赋值给非const类型
+{}
+
+template <typename T>
+AutoPtr<T>::AutoPtr(AutoPtr<T>& ap) : _ptr(ap._ptr)
+{
+	ap._ptr = NULL;
+}
+
+template <typename T>
+AutoPtr<T>& AutoPtr<T>::operator=(AutoPtr<T>& ap)
+{
+	if (this != &ap)
+	{
+		delete this->_ptr;
+		this->_ptr = ap._ptr;
+		ap._ptr = NULL;
+	}
+	return *this;
+}
+
+template <typename T>
+AutoPtr<T>::~AutoPtr()
+{
+	if (this->_ptr)
+	{
+		delete this->_ptr;
+	}
+}
+
+template <typename T>
+T& AutoPtr<T>::operator*()const
+{
+	return *(this->_ptr);
+}
+
+template <typename T>
+T* AutoPtr<T>::operator->()const
+{
+	return this->_ptr;
+}
+
+template <typename T>
+T* AutoPtr<T>::GetStr()const
+{
+	return (this->_ptr);
+}
