@@ -1,0 +1,90 @@
+struct Pos
+{
+	int _row;
+	int _col;
+};
+
+bool MinPath(vector<vector<int>>& maze, int row, int col, Pos enrty, stack<Pos>& minPath)
+{
+	assert(!maze.empty());
+	stack<Pos> path;
+	bool firstOrNo = true;
+	vector<vector<int>> tmp = maze;
+	while (maze[enrty._row][enrty._col] != 3)
+	{
+		tmp = maze;
+		path.push(enrty);
+		while (!path.empty())
+		{
+			Pos cur = path.top();
+			tmp[cur._row][cur._col] = 2;
+			if (path.top()._row == row - 1)
+			{
+				maze[path.top()._row][path.top()._col] = 4;
+				if (firstOrNo || path.size() < minPath.size())
+				{
+					minPath = path;
+					firstOrNo = false;
+				}
+				while (!path.empty())
+				{
+					path.pop();
+				}
+				break;
+			}
+			//上
+			Pos next = cur;
+			next._row--;
+			if (next._row >= 0 && next._row < row
+				&&next._col >= 0 && next._col < col
+				&&tmp[next._row][next._col] == 0)
+			{
+				path.push(next);
+				continue;
+			}
+			//下
+			next = cur;
+			next._row++;
+			if (next._row >= 0 && next._row < row
+				&&next._col >= 0 && next._col < col
+				&&tmp[next._row][next._col] == 0)
+			{
+				path.push(next);
+				continue;
+			}
+			//左
+			next = cur;
+			next._col--;
+			if (next._row >= 0 && next._row < row
+				&&next._col >= 0 && next._col < col
+				&&tmp[next._row][next._col] == 0)
+			{
+				path.push(next);
+				continue;
+			}
+			//右
+			next = cur;
+			next._col++;
+			if (next._row >= 0 && next._row < row
+				&&next._col >= 0 && next._col < col
+				&&tmp[next._row][next._col] == 0)
+			{
+				path.push(next);
+				continue;
+			}
+			maze[path.top()._row][path.top()._col] = 3;
+			path.pop();
+		}//while !empty(path)
+
+	} //while 大
+
+	//在地图中标出最短路径
+	stack<Pos> p = minPath;
+	while (!p.empty())
+	{
+		maze[p.top()._row][p.top()._col] = 2;
+		p.pop();
+	}
+	
+	return !minPath.empty();
+}
