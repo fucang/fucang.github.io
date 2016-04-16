@@ -1,0 +1,225 @@
+//Generalized.cpp
+#define _CRT_SECURE_NO_WARNINGS 1
+
+#include <iostream>
+#include "Generalized.h"
+#include <assert.h>
+
+Generalized::Generalized() :_head(NULL)
+{}
+Generalized::Generalized(const char* str) : _head(NULL)
+{
+	_head = _CreateList(str);
+}
+GeneralizedNode* Generalized::_CreateList(const char* &str)
+{
+	assert(str);
+	while (isspace(*str))
+	{
+		++str;
+	}
+	assert(*str == '(');
+	// D = (a,b,(c,d),(e,(f),h))
+	GeneralizedNode* head = new GeneralizedNode(HEAD);
+	GeneralizedNode* cur = head;	
+	++str;
+	while (*str != '\0')
+	{
+		if (*str == '(')
+		{
+			cur->_next = new GeneralizedNode(SUB);
+			cur = cur->_next;
+			cur->_sublink = _CreateList(str);		
+		}
+		else if ((*str >= '0'&&*str <= '9') ||
+			(*str >= 'a'&&*str <= 'z') ||
+			(*str >= 'A'&&*str <= 'Z'))
+		{
+			cur->_next = new GeneralizedNode(VALUE, *str);
+			cur = cur->_next;
+			++str;
+		}
+		else if (*str == ')')
+		{
+			++str;
+			break;
+		}
+		else
+		{
+			++str;
+		}
+	}
+	return head;
+}
+
+Generalized::Generalized(const Generalized& g)
+{
+	this->_head = this->_Copy(g._head);
+}
+
+GeneralizedNode* Generalized::_Copy(GeneralizedNode* head)
+{
+	assert(head);
+	GeneralizedNode* cur = head;
+	GeneralizedNode* retHead = NULL;
+	GeneralizedNode* tmp = NULL;
+	while (cur)
+	{
+		if (cur->_type == HEAD)
+		{
+			retHead = new GeneralizedNode(HEAD);
+			tmp = retHead;
+		}
+		else if (cur->_type == VALUE)
+		{
+			tmp->_next = new GeneralizedNode(VALUE, cur->_value);
+			tmp = tmp->_next;
+		}
+		else if (cur->_type == SUB)
+		{
+			tmp->_next = new GeneralizedNode(SUB);
+			tmp->_next->_sublink = _Copy(cur->_sublink);
+			tmp = tmp->_next;
+		}
+		cur = cur->_next;
+	}
+	return retHead;
+}
+
+Generalized& Generalized::operator=(const Generalized& g)
+{
+	if (this->_head != g._head)
+	{
+		this->_Destory(this->_head);
+		this->_Copy(g._head);
+	}
+	return *this;
+}
+
+Generalized::~Generalized()
+{
+	this->_Destory(this->_head);
+}
+
+void Generalized::_Destory(GeneralizedNode* head)
+{
+	GeneralizedNode* cur = head;
+	while (cur)
+	{
+		GeneralizedNode* del = cur;
+		cur = cur->_next;
+		if (del->_type == SUB)
+		{
+			_Destory(del->_sublink);
+		}
+		delete del;
+		del = NULL;		
+	}
+}
+
+void Generalized::Print()const
+{
+	this->_PrintGeneral(this->_head);
+}
+void Generalized::_PrintGeneral(GeneralizedNode* head)const
+{
+	assert(head);
+	GeneralizedNode* cur = head;
+	while (cur)
+	{
+		if (cur->_type == HEAD)
+		{
+			std::cout << "(";		
+		}
+		else if (cur->_type == VALUE)
+		{
+			std::cout << (char)cur->_value;
+			if (cur->_next)
+			{
+				std::cout << ",";
+			}
+		}
+		else if (cur->_type == SUB)
+		{
+			//(a,b,(c,d),(e,(f),h)) 
+			_PrintGeneral(cur->_sublink);	
+			if (cur->_next)
+			{
+				std::cout << ",";
+			}
+		}
+		cur = cur->_next;
+	}
+	std::cout << ")";
+}
+
+size_t Generalized::Size()const
+{
+	return this->_SizeGeneralized(this->_head);
+}
+
+size_t Generalized::_SizeGeneralized(GeneralizedNode* head)const
+{
+	if (head == NULL)
+	{
+		return 0;
+	}
+	size_t iCount = 0;
+	GeneralizedNode* cur = head;
+	while (cur)
+	{
+		if (cur->_type == VALUE)
+		{
+			++iCount;
+		}
+		else if (cur->_type == SUB)
+		{
+			iCount += _SizeGeneralized(cur->_sublink);
+		}
+		cur = cur->_next;
+	}
+	return  iCount;
+}
+
+size_t Generalized::Length()const
+{
+	if (this->_head == NULL)
+	{
+		return 0;
+	}
+	GeneralizedNode* cur = this->_head->_next;
+	size_t iCount = 0;
+	while (cur)
+	{
+		++iCount;
+		cur = cur->_next;
+	}
+	return iCount;
+}
+
+size_t Generalized::Depth()const
+{
+	return this->_DepthGeneralized(this->_head);
+}
+
+size_t Generalized::_DepthGeneralized(GeneralizedNode* head)const
+{
+	assert(head);
+	// D = (a,b,(c,d),(e,(f),h))
+	GeneralizedNode* cur = head;
+	size_t max = 0;
+	size_t d = 0;
+	while (cur)
+	{
+		if (cur->_type == SUB)
+		{
+			d = _DepthGeneralized(cur->_sublink);
+			if (max < d)
+			{
+				max = d;
+			}
+		}
+		cur = cur->_next;
+	}
+	return max + 1;
+}
