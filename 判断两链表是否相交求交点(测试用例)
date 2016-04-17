@@ -22,8 +22,6 @@ void PrintMeetNode(const MeetListNode& meet)
 	}
 }
 
-
-
 void test1()
 {
 	ListNode l1(1);
