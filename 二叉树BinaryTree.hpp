@@ -218,3 +218,164 @@ size_t BinaryTree<T>::_LeafSize(Node* root)const
 	}
 	return _LeafSize(root->_left) + _LeafSize(root->_right);
 }
+
+template <typename T>
+void  BinaryTree<T>::ExchangeLeftRight()
+{
+	this->_ExChangLR(this->_root);
+}
+
+template <typename T>
+void  BinaryTree<T>::_ExChangLR(BinaryTreeNode<T>* root)
+{
+	if (root == NULL)
+	{
+		return;
+	}
+	if (root->_left == NULL && root->_right == NULL)
+	{
+		return;
+	}
+	swap(root->_left, root->_right);
+	_ExChangLR(root->_left); 
+	_ExChangLR(root->_right);
+}
+
+template <typename T>
+void BinaryTree<T>::PrevOrderNRed()const
+{
+	if (this->_root == NULL)
+	{
+		return;
+	}
+	stack<Node*> s;
+	s.push(this->_root);
+	while (!s.empty())
+	{
+		Node* top = s.top();
+		cout << top->_data << " ";
+		s.pop();
+		if (top->_right)
+		{
+			s.push(top->_right);
+		}
+		if (top->_left)
+		{
+			s.push(top->_left);
+		}
+	}
+	cout << endl;
+}
+
+template <typename T>
+void BinaryTree<T>::InOrderNRed()const
+{
+	if (this->_root == NULL)
+	{
+		return;
+	}
+	stack<Node*> s;
+	Node* cur = this->_root;
+	while (cur || !s.empty())
+	{
+		while (cur)
+		{
+			s.push(cur);
+			cur = cur->_left;
+		}
+		if (!s.empty())
+		{
+			Node* top = s.top();
+			cout << top->_data << " ";
+			s.pop();
+			cur = top->_right;
+		}
+	}
+	cout << endl;
+}
+
+template <typename T>
+void BinaryTree<T>::PostOrderNRed()const
+{
+	if (this->_root == NULL)
+	{
+		return;
+	}
+	stack<Node*> s;
+	Node* cur = this->_root;
+	Node* prev = NULL;
+	while (cur || !s.empty())
+	{
+		while (cur)
+		{
+			s.push(cur);
+			cur = cur->_left;
+		}
+		Node* top = s.top();
+		if (top->_right == NULL || top->_right == prev)
+		{
+			cout << top->_data << " ";
+			s.pop();
+			prev = top;
+		}
+		else
+		{
+			cur = top->_right;
+		}
+	}
+	cout << endl;
+}
+
+template <typename T>
+size_t BinaryTree<T>::GetLevelKNRed(int k)const
+{
+	assert(k > 0);
+	if (this->_root == NULL)
+	{
+		return 0;
+	}
+	queue<Node*> q;
+	q.push(this->_root);
+	for (int i = 1; i < k; ++i)
+	{
+		size_t size = q.size();
+		for (int j = 0; j < size; ++j)
+		{
+			Node* front = q.front();
+			if (front->_left)
+			{
+				q.push(front->_left);
+			}
+			if (front->_right)
+			{
+				q.push(front->_right);
+			}
+			q.pop();
+		}
+	}
+	return q.size();
+}
+
+template <typename T>
+size_t BinaryTree<T>::GetLevelK(int k)const
+{
+	if (this->_root == NULL)
+	{
+		return 0;
+	}
+	return _GetLevelK(this->_root, k);
+}
+
+template <typename T>
+size_t BinaryTree<T>::_GetLevelK(Node* root, int k)const
+{
+	if (root == NULL)
+	{
+		return 0;
+	}
+	if (k == 1)
+	{
+		return 1;
+	}
+	return _GetLevelK(root->_left, k - 1) + _GetLevelK(root->_right, k - 1);
+}
