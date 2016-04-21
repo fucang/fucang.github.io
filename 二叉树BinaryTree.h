@@ -34,6 +34,16 @@ public:
 	size_t Size()const;
 	size_t Depth()const;
 	size_t LeafSize()const;
+	
+	
+	void ExchangeLeftRight();
+
+	void PrevOrderNRed()const;
+	void InOrderNRed()const;
+	void PostOrderNRed()const;
+
+	size_t GetLevelK(int k)const;
+	size_t GetLevelKNRed(int k)const;
 
 protected:
 	BinaryTreeNode<T>* _CreateTree(const T* array, const size_t& size, const T& invalid, size_t& index);
@@ -47,6 +57,9 @@ protected:
 	size_t _Size(Node* root)const;
 	size_t _Depth(Node* root)const;
 	size_t _LeafSize(Node* root)const;
+
+	void  _ExChangLR(BinaryTreeNode<T>* root);
+	size_t _GetLevelK(Node* root, int k)const;
 
 protected:
 	Node* _root;
