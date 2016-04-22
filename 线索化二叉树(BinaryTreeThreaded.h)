@@ -48,6 +48,8 @@ public:
 	void InThreaded();
 	void PostThreaded();
 
+	void InThreadedNRec();
+	
 protected:
 	static BinaryTreeNodeThd<T>* _CreateTree(const T* array, const size_t& size, 
 							const T& invalid, size_t& index);
