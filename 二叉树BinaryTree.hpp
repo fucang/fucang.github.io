@@ -379,3 +379,42 @@ size_t BinaryTree<T>::_GetLevelK(Node* root, int k)const
 	}
 	return _GetLevelK(root->_left, k - 1) + _GetLevelK(root->_right, k - 1);
 }
+
+template <typename T>
+void BinaryTreeThd<T>::InThreadedNRec()
+{
+	if (this->_root == NULL)
+	{
+		return;
+	}
+	Node* cur = this->_root;
+	Node* prev = NULL;
+	stack<Node*> s;
+	while (cur || !s.empty())
+	{
+		while (cur)
+		{
+			s.push(cur);
+			cur = cur->_left;
+		}
+		Node* top = s.top();
+		if (!s.empty())
+		{
+			//cout << top->_data << " ";
+			if (top->_left == NULL)
+			{
+				top->_left = prev;
+				top->_leftTag = THREAD;
+			}
+			if (prev && prev->_right == NULL)
+			{
+				prev->_right = top;
+				prev->_rightTag = THREAD;
+			}
+			prev = top;
+			s.pop();
+			cur = top->_right;
+		}
+	}
+	cout << endl;
+}
