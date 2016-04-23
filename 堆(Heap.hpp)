@@ -131,3 +131,16 @@ std::ostream& operator<<(std::ostream& out, const Heap<T>& heap)
 	out << endl;
 	return out;
 }
+
+//堆排序
+template <typename T>
+void HeapSort(T* array, size_t size)
+{
+	//建初堆
+	Heap<T> heap(array, size);
+	for (int i = size - 1; i >= 0; --i)
+	{
+		array[i] = heap.GetTop();
+		heap.Pop();
+	}
+}
