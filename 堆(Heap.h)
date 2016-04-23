@@ -35,4 +35,8 @@ protected:
 template <typename T>
 std::ostream& operator<<(std::ostream& out, const Heap<T>& heap);
 
+//堆排序
+template <typename T>
+void HeapSort(T* array, size_t size);
+
 #endif /*__HEAP_H__*/
