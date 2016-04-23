@@ -50,6 +50,10 @@ public:
 
 	void InThreadedNRec();
 	
+	void PrevThdOrder()const;
+	void InThdOrder()const;
+	void PostThdOrder()const;
+	
 protected:
 	static BinaryTreeNodeThd<T>* _CreateTree(const T* array, const size_t& size, 
 							const T& invalid, size_t& index);
@@ -63,6 +67,7 @@ protected:
 	static void _PrevThreaded(Node* root, Node* &prev);
 	static void _InThreaded(Node* root, Node* &prev);
 	static void _PostThreaded(Node* root, Node* &prev);
+	
 protected:
 	Node* _root;
 };
