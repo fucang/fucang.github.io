@@ -241,3 +241,91 @@ void BinaryTreeThd<T>::InThreadedNRec()
 	}
 	cout << endl;
 }
+
+template <typename T>
+void BinaryTreeThd<T>::PrevThdOrder()const
+{
+	if (this->_root == NULL)
+	{
+		return;
+	}
+	Node* cur = this->_root;
+	while (cur)
+	{
+		while (cur->_leftTag == LINK)
+		{
+			cout << cur->_data << " ";
+			cur = cur->_left;
+		}
+		if (cur)
+		{
+			cout << cur->_data << " ";
+			cur = cur->_right;
+		}
+	}
+	cout << endl;
+}
+
+template <typename T>
+void BinaryTreeThd<T>::InThdOrder()const
+{
+	if (this->_root == NULL)
+	{
+		return;
+	}
+	if (this->_root->_left == NULL && this->_root->_right == NULL)
+	{
+		cout << this->_root->_data << endl;
+		return;
+	}
+	Node* cur = this->_root;
+	while (cur)
+	{
+		while (cur->_leftTag == LINK)
+		{
+			cur = cur->_left;
+		}
+		cout << cur->_data << " ";
+		while (cur->_rightTag == THREAD)
+		{
+			cur = cur->_right;
+			cout << cur->_data << " ";
+		}
+		cur = cur->_right;
+	}
+}
+
+template <typename T>
+void BinaryTreeThd<T>::PostThdOrder()const
+{
+	if (this->_root == NULL)
+	{
+		return;
+	}
+	if (this->_root->_left == NULL && this->_root->_right == NULL)
+	{
+		cout << this->_root->_data << endl;
+		return;
+	}
+	Node* cur = this->_root;
+	stack<Node*> s;
+
+	//后序: 左右中
+	//采用: 中右左，再逆序
+	while (cur)
+	{
+		while (cur->_rightTag == LINK)
+		{
+			s.push(cur);
+			cur = cur->_right;
+		}
+		s.push(cur);
+		cur = cur->_left;
+	}
+	while (!s.empty())
+	{
+		cout << (s.top())->_data << " ";
+		s.pop();
+	}
+	cout << endl;
+}
