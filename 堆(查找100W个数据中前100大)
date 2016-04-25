@@ -1,0 +1,115 @@
+//Data.h
+#pragma once
+
+#ifndef __DATA_H__
+#define __DATA_H__
+
+#include <iostream>
+#include <vector>
+#include <stdlib.h>
+#include <time.h>
+using namespace std;
+
+const int N = 1000000;
+
+//写入数据
+void WirteData(const int k)
+{
+	srand((unsigned)time(NULL));
+	std::FILE* filename = fopen("C:\\Users\\朱潇翔\\Desktop\\Money.txt", "w");
+	for (int i = 0; i < N; ++i)
+	{
+		char a[20] = { 0 };
+		int val = rand() + i;
+		_itoa(val, a, 10);
+		fwrite(a, sizeof(a[0]), sizeof(a) / sizeof(a[0]), filename);
+	}
+	fclose(filename);
+}
+
+void GetVec(vector<int>& money,int k)
+{
+	WirteData(k);
+	std::FILE* filename = fopen("C:\\Users\\朱潇翔\\Desktop\\Money.txt", "r");
+	money.reserve(N);
+	for (int i = 0; i < N; ++i)
+	{
+		char ch = 0;
+		do{
+			ch = fgetc(filename);
+		} while (ch == 0);
+		string s;
+		do{
+			s.push_back(ch);
+			ch = fgetc(filename);
+		} while (ch != 0);
+		money.push_back(atoi(s.c_str()));
+	}
+}
+
+#endif /*#ifndef __DATA_H__*/
+
+//下调 //Compare
+template <typename T,template<class> class Compare>
+void AdjustDown(T* array, size_t size, int parent, const Compare<T>& com)
+{
+	int child = parent * 2 + 1;
+	while (child < (int)size)
+	{
+		if (child + 1 < size && com(array[child + 1], array[child]))
+		{
+			++child;
+		}
+		if (com(array[child], array[parent]))
+		{
+			swap(array[parent], array[child]);
+			parent = child;
+			child = parent * 2 + 1;
+		}
+		else
+		{
+			break;
+		}
+	}
+}
+
+template <typename T, template<class> class Compare>
+void GetTopK(T* array, const vector<T>& money, const size_t& k, const size_t& n, const Compare<T>& com)
+{
+	assert(array);
+	assert(k < n);
+	for (size_t i = 0; i < k; ++i)
+	{
+		array[i] = money[i];
+	}
+	//建堆
+	for (int i = (k - 2) / 2; i >= 0; --i)
+	{
+		AdjustDown(array, k, i, com);
+	}
+	for (int i = k; i < n; ++i)
+	{
+		if (com(array[0],money[i]))
+		{
+			array[0] = money[i];
+			AdjustDown(array, k, 0, com);
+		}	
+	}
+}
+
+void test()
+{
+	int* array = new int[100];
+	vector<int> money;
+	money.clear();
+	GetVec(money, 100);
+	GetTopK(array, money, 100, N,Less<int>());
+	for (int i = 0; i < 100; ++i)
+	{
+		cout << array[i] << " ";
+		if ((i + 1) % 11 == 0)
+		{
+			cout << endl;
+		}
+	}
+}
