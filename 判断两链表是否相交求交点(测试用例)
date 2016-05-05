@@ -1,0 +1,254 @@
+#define _CRT_SECURE_NO_WARNINGS 1
+#include <iostream>
+using namespace std;
+
+#include "ListMeet.h"
+
+void PrintMeetNode(const MeetListNode& meet)
+{
+	cout << "  相交点：";
+	if (meet._oneMeet)
+	{
+		cout << meet._oneMeet->_data;
+		if (meet._twoMeet)
+		{
+			cout << ", " << meet._twoMeet->_data;
+		}
+		cout << endl;
+	}
+	else
+	{
+		cout << "NULL" << endl;
+	}
+}
+
+void test1()
+{
+	ListNode l1(1);
+	ListNode l2(2);
+	ListNode l3(3);
+	ListNode l4(4);
+	ListNode l5(5);
+	ListNode l6(6);
+	ListNode l7(7);
+	ListNode l8(8);
+	ListNode* headA = &l1;
+	l1._next = &l2;
+	l2._next = &l3;
+	l3._next = &l4;
+	l4._next = &l5;
+	l5._next = &l6;
+	l6._next = &l7;
+	l7._next = &l8;
+
+	ListNode l9(9);
+	ListNode l10(10);
+	ListNode l11(11);
+	ListNode l12(12);
+	ListNode l13(13);
+	ListNode* headB = &l9;
+	l9._next = &l10;
+	l10._next = &l11;
+	l11._next = &l12;
+	l12._next = &l13;
+
+	MeetListNode meet = ListMeetNode(headA, headB);
+	PrintMeetNode(meet);
+}
+
+void test2()
+{
+	ListNode l1(1);
+	ListNode l2(2);
+	ListNode l3(3);
+	ListNode l4(4);
+	ListNode l5(5);
+	ListNode l6(6);
+	ListNode l7(7);
+	ListNode l8(8);
+	ListNode* headA = &l1;
+	l1._next = &l2;
+	l2._next = &l3;
+	l3._next = &l4;
+	l4._next = &l5;
+	l5._next = &l6;
+	l6._next = &l7;
+	l7._next = &l8;
+
+	ListNode l9(9);
+	ListNode l10(10);
+	ListNode l11(11);
+	ListNode l12(12);
+	ListNode l13(13);
+	ListNode* headB = &l9;
+	l9._next = &l10;
+	l10._next = &l11;
+	l11._next = &l12;
+	l12._next = &l13;
+
+	l13._next = &l2;
+
+	MeetListNode meet = ListMeetNode(headA, headB);
+	PrintMeetNode(meet);
+}
+
+void test3()
+{
+	ListNode l1(1);
+	ListNode l2(2);
+	ListNode l3(3);
+	ListNode l4(4);
+	ListNode l5(5);
+	ListNode l6(6);
+	ListNode l7(7);
+	ListNode l8(8);
+	ListNode* headA = &l1;
+	l1._next = &l2;
+	l2._next = &l3;
+	l3._next = &l4;
+	l4._next = &l5;
+	l5._next = &l6;
+	l6._next = &l7;
+	l7._next = &l8;
+	l8._next = &l4;
+
+	ListNode l9(9);
+	ListNode l10(10);
+	ListNode l11(11);
+	ListNode l12(12);
+	ListNode l13(13);
+	ListNode* headB = &l9;
+	l9._next = &l10;
+	l10._next = &l11;
+	l11._next = &l12;
+	l12._next = &l13;
+
+	MeetListNode meet = ListMeetNode(headA, headB);
+	PrintMeetNode(meet);
+}
+
+void test4()
+{
+	ListNode l1(1);
+	ListNode l2(2);
+	ListNode l3(3);
+	ListNode l4(4);
+	ListNode l5(5);
+	ListNode l6(6);
+	ListNode l7(7);
+	ListNode l8(8);
+	ListNode* headA = &l1;
+	l1._next = &l2;
+	l2._next = &l3;
+	l3._next = &l4;
+	l4._next = &l5;
+	l5._next = &l6;
+	l6._next = &l7;
+	l7._next = &l8;
+	l8._next = &l4;
+
+	ListNode l9(9);
+	ListNode l10(10);
+	ListNode l11(11);
+	ListNode l12(12);
+	ListNode l13(13);
+	ListNode* headB = &l9;
+	l9._next = &l10;
+	l10._next = &l11;
+	l11._next = &l12;
+	l12._next = &l13;
+	l13._next = &l11;
+
+	MeetListNode meet = ListMeetNode(headA, headB);
+	PrintMeetNode(meet);
+}
+
+void test5()
+{
+	ListNode l1(1);
+	ListNode l2(2);
+	ListNode l3(3);
+	ListNode l4(4);
+	ListNode l5(5);
+	ListNode l6(6);
+	ListNode l7(7);
+	ListNode l8(8);
+	ListNode* headA = &l1;
+	l1._next = &l2;
+	l2._next = &l3;
+	l3._next = &l4;
+	l4._next = &l5;
+	l5._next = &l6;
+	l6._next = &l7;
+	l7._next = &l8;
+	l8._next = &l4;
+	
+	ListNode l9(9);
+	ListNode l10(10);
+	ListNode l11(11);
+	ListNode l12(12);
+	ListNode l13(13);
+	ListNode* headB = &l9;
+	l9._next = &l10;
+	l10._next = &l11;
+	l11._next = &l12;
+	l12._next = &l13;
+	l13._next = &l2;
+
+	MeetListNode meet = ListMeetNode(headA, headB);
+	PrintMeetNode(meet);
+}
+
+void test6()
+{
+	ListNode l1(1);
+	ListNode l2(2);
+	ListNode l3(3);
+	ListNode l4(4);
+	ListNode l5(5);
+	ListNode l6(6);
+	ListNode l7(7);
+	ListNode l8(8);
+	ListNode* headA = &l1;
+	l1._next = &l2;
+	l2._next = &l3;
+	l3._next = &l4;
+	l4._next = &l5;
+	l5._next = &l6;
+	l6._next = &l7;
+	l7._next = &l8;
+	l8._next = &l4;
+
+	ListNode l9(9);
+	ListNode l10(10);
+	ListNode l11(11);
+	ListNode l12(12);
+	ListNode l13(13);
+	ListNode* headB = &l9;
+	l9._next = &l10;
+	l10._next = &l11;
+	l11._next = &l12;
+	l12._next = &l13;
+	l13._next = &l7;
+
+	MeetListNode meet = ListMeetNode(headA, headB);
+	PrintMeetNode(meet);
+}
+
+int main()
+{
+	cout << "test1 两个链表不带环且不相交:> ";
+	test1();
+	cout << "test2 两个链表不带环且相交:> ";
+	test2();
+	cout << "test3 一个带环一个不带环肯定不相交:> ";
+	test3();
+	cout << "test4 两个链表带环但不相交:> ";
+	test4();
+	cout << "test5 两个链表带环相交且入口点相同:> ";
+	test5();
+	cout << "test6 两个链表带环相交且入口点不同:> ";
+	test6();
+	system("pause");
+	return 0;
+}

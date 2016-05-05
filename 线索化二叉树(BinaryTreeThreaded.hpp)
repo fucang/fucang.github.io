@@ -1,0 +1,331 @@
+#define _CRT_SECURE_NO_WARNINGS 1
+
+#include "BinaryTreeThreaded.h"
+
+template <typename T>
+BinaryTreeThd<T>::BinaryTreeThd() :_root(NULL)
+{}
+
+template <typename T>
+BinaryTreeThd<T>::BinaryTreeThd(const T* array, const size_t& size, const T& invalid) : _root(NULL)
+{
+	size_t index = 0;
+	this->_root = _CreateTree(array, size, invalid, index);
+}
+
+template <typename T>
+BinaryTreeNodeThd<T>* BinaryTreeThd<T>::_CreateTree(const T* array,
+				const size_t& size, const T& invalid, size_t& index)
+{
+	assert(array);
+	Node* root = NULL;
+	if (index < size && array[index] != invalid)
+	{
+		root = new Node(array[index]);
+		root->_left = _CreateTree(array, size, invalid, ++index);
+		root->_right = _CreateTree(array, size, invalid, ++index);
+	}
+	return root;
+}
+
+template <typename T>
+BinaryTreeThd<T>::~BinaryTreeThd()
+{
+	_Destory(this->_root);
+}
+template <typename T>
+void BinaryTreeThd<T>::_Destory(Node* root)
+{
+	if (root == NULL)
+	{
+		return;
+	}
+	if (root->_leftTag == LINK)
+	{
+		_Destory(root->_left);
+	}
+	if (root->_rightTag == LINK)
+	{
+		_Destory(root->_right);
+	}
+	delete root;
+}
+
+template <typename T>
+void BinaryTreeThd<T>::PrevOrder()const
+{
+	_PrevOrder(this->_root);
+	cout << endl;
+}
+template <typename T>
+void BinaryTreeThd<T>::_PrevOrder(Node* root)
+{
+	if (root == NULL)
+	{
+		return;
+	}
+	cout << root->_data << " ";
+	_PrevOrder(root->_left);
+	_PrevOrder(root->_right);
+}
+
+template <typename T>
+void BinaryTreeThd<T>::InOrder()const
+{
+	_InOrder(this->_root);
+	cout << endl;
+}
+template <typename T>
+void BinaryTreeThd<T>::_InOrder(Node* root)
+{
+	if (root == NULL)
+	{
+		return;
+	}
+	_InOrder(root->_left);
+	cout << root->_data << " ";
+	_InOrder(root->_right);
+}
+
+template <typename T>
+void BinaryTreeThd<T>::PostOrder()const
+{
+	this->_PostOrder(this->_root);
+	cout << endl;
+}
+template <typename T>
+void BinaryTreeThd<T>::_PostOrder(Node* root)
+{
+	if (root == NULL)
+	{
+		return;
+	}
+	_PostOrder(root->_left);
+	_PostOrder(root->_right);
+	cout << root->_data << " ";
+}
+
+template <typename T>
+void BinaryTreeThd<T>::PrevTheaded()
+{
+	Node* prev = NULL;
+	_PrevThreaded(this->_root, prev);
+}
+template <typename T>
+void BinaryTreeThd<T>::_PrevThreaded(Node* root, Node* &prev)
+{
+	if (root == NULL)
+	{
+		return;
+	}
+	if (root->_left == NULL)
+	{
+		root->_left = prev;
+		root->_leftTag = THREAD;
+	}
+	if (prev && prev->_right == NULL)
+	{
+		prev->_right = root;
+		prev->_rightTag = THREAD;
+	}
+	prev = root;
+
+	if (root->_leftTag == LINK)
+	{
+		_PrevThreaded(root->_left, prev);
+	}
+	if (root->_rightTag == LINK)
+	{
+		_PrevThreaded(root->_right, prev);
+	}
+	
+}
+
+template <typename T>
+void BinaryTreeThd<T>::InThreaded()
+{
+	Node* prev = NULL;
+	_InThreaded(this->_root, prev);
+}
+template <typename T>
+void BinaryTreeThd<T>::_InThreaded(Node* root,Node* &prev)
+{
+	if (root == NULL)
+	{
+		return;
+	}
+
+	_InThreaded(root->_left, prev);
+
+	if (root->_left == NULL)
+	{
+		root->_left = prev;
+		root->_leftTag = THREAD;
+	}
+	if (prev && prev->_right == NULL)
+	{
+		prev->_right = root;
+		prev->_rightTag = THREAD;
+	}
+	prev = root;
+
+	_InThreaded(root->_right, prev);
+}
+
+template <typename T>
+void BinaryTreeThd<T>::PostThreaded()
+{
+	Node* prev = NULL;
+	_PostThreaded(this->_root, prev);
+}
+template <typename T>
+void BinaryTreeThd<T>::_PostThreaded(Node* root, Node* &prev)
+{
+	if (root == NULL)
+	{
+		return;
+	}
+
+	_PostThreaded(root->_left, prev);
+
+	_PostThreaded(root->_right, prev);
+
+	if (root->_left == NULL)
+	{
+		root->_left = prev;
+		root->_leftTag = THREAD;
+	}
+	if (prev && prev->_right == NULL)
+	{
+		prev->_right = root;
+		prev->_rightTag = THREAD;
+	}
+	prev = root;
+}
+
+template <typename T>
+void BinaryTreeThd<T>::InThreadedNRec()
+{
+	if (this->_root == NULL)
+	{
+		return;
+	}
+	Node* cur = this->_root;
+	Node* prev = NULL;
+	stack<Node*> s;
+	while (cur || !s.empty())
+	{
+		while (cur)
+		{
+			s.push(cur);
+			cur = cur->_left;
+		}
+		Node* top = s.top();
+		if (!s.empty())
+		{
+			//cout << top->_data << " ";
+			if (top->_left == NULL)
+			{
+				top->_left = prev;
+				top->_leftTag = THREAD;
+			}
+			if (prev && prev->_right == NULL)
+			{
+				prev->_right = top;
+				prev->_rightTag = THREAD;
+			}
+			prev = top;
+			s.pop();
+			cur = top->_right;
+		}
+	}
+	cout << endl;
+}
+
+template <typename T>
+void BinaryTreeThd<T>::PrevThdOrder()const
+{
+	if (this->_root == NULL)
+	{
+		return;
+	}
+	Node* cur = this->_root;
+	while (cur)
+	{
+		while (cur->_leftTag == LINK)
+		{
+			cout << cur->_data << " ";
+			cur = cur->_left;
+		}
+		if (cur)
+		{
+			cout << cur->_data << " ";
+			cur = cur->_right;
+		}
+	}
+	cout << endl;
+}
+
+template <typename T>
+void BinaryTreeThd<T>::InThdOrder()const
+{
+	if (this->_root == NULL)
+	{
+		return;
+	}
+	if (this->_root->_left == NULL && this->_root->_right == NULL)
+	{
+		cout << this->_root->_data << endl;
+		return;
+	}
+	Node* cur = this->_root;
+	while (cur)
+	{
+		while (cur->_leftTag == LINK)
+		{
+			cur = cur->_left;
+		}
+		cout << cur->_data << " ";
+		while (cur->_rightTag == THREAD)
+		{
+			cur = cur->_right;
+			cout << cur->_data << " ";
+		}
+		cur = cur->_right;
+	}
+}
+
+template <typename T>
+void BinaryTreeThd<T>::PostThdOrder()const
+{
+	if (this->_root == NULL)
+	{
+		return;
+	}
+	if (this->_root->_left == NULL && this->_root->_right == NULL)
+	{
+		cout << this->_root->_data << endl;
+		return;
+	}
+	Node* cur = this->_root;
+	stack<Node*> s;
+
+	//后序: 左右中
+	//采用: 中右左，再逆序
+	while (cur)
+	{
+		while (cur->_rightTag == LINK)
+		{
+			s.push(cur);
+			cur = cur->_right;
+		}
+		s.push(cur);
+		cur = cur->_left;
+	}
+	while (!s.empty())
+	{
+		cout << (s.top())->_data << " ";
+		s.pop();
+	}
+	cout << endl;
+}

@@ -1,0 +1,70 @@
+#pragma once
+#ifndef __HEAP_H__
+#define __HEAP_H__
+
+#include <iostream>
+#include <assert.h>
+#include <vector>
+#include "Data.h"
+
+template <typename T>
+struct Less
+{
+	bool operator()(const T& left, const T& right)const
+	{
+		return left < right;
+	}
+};
+template <typename T>
+struct Greater
+{
+	bool operator()(const T& left, const T& right)const
+	{
+		return left > right;
+	}
+};
+
+template <typename T,template<class> class Compare = Greater>
+class Heap
+{
+	friend std::ostream& operator<<<T,Compare>(std::ostream& out, const Heap<T,Compare>& heap);
+public:
+	Heap();
+	Heap(const T* array, size_t size);
+	Heap(const Heap<T,Compare>& heap);
+	Heap<T,Compare>& operator=(const Heap<T, Compare>& heap);
+	~Heap();
+
+	void Push(const T& x);
+	void Pop();
+	T GetTop()const;
+	bool Empty()const;
+	size_t size()const;
+
+protected:
+	void _AdjustDown(size_t parent);
+	void _AdjustUp(size_t pos);
+
+protected:
+	std::vector<T> _array;
+};
+
+//堆排序
+template <typename T, template<class> class Compare = Greater>
+void HeapSort(T* array, size_t size, const Compare<T>& com = Compare<T>());
+//建初堆
+template <typename T, template<class> class Compare = Greater>
+void CrtHeap(T* array, size_t size, const Compare<T>& com = Compare<T>());
+//下调
+template <typename T, template<class> class Compare = Greater>
+void AdjustDown(T* array, size_t size, int parent = 0, const Compare<T>& com = Compare<T>());
+
+template <typename T, template<class> class Compare = Greater>
+std::ostream& operator<<(std::ostream& out, const Heap<T, Compare>& heap);
+
+template <typename T, template<class> class Compare = Greater>
+void GetTopK(T* array, const vector<T>& money, const size_t& k, const size_t& n, const Compare<T>& com = Compare<T>());
+
+#endif /*__HEAP_H__*/
+
+

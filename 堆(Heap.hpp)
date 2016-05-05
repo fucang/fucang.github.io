@@ -1,0 +1,146 @@
+#define _CRT_SECURE_NO_WARNINGS 1
+
+#include "Heap.h"
+
+template <typename T>
+Heap<T>::Heap()
+{}
+
+template <typename T>
+Heap<T>::~Heap()
+{}
+
+template <typename T>
+Heap<T>::Heap(const T* array, size_t size)
+{
+	this->_array.resize(size);
+	for (size_t i = 0; i < size; ++i)
+	{
+		this->_array[i] = array[i];
+	}
+	for (int i = (size - 2) / 2; i >= 0; --i)
+	{
+		this->_AdjustDown(i);
+	}
+}
+
+template <typename T>
+Heap<T>::Heap(const Heap<T>& heap)
+{
+	size_t size = heap.size();
+	this->_array.resize(size);
+	for (size_t i = 0; i < size; ++i)
+	{
+		this->_array[i] = heap._array[i];
+	}
+}
+
+template <typename T>
+Heap<T>& Heap<T>::operator=(const Heap<T>& heap)
+{
+	if (this != &heap)
+	{
+		this->_array = heap._array;
+	}
+	return *this;
+}
+
+template <typename T>
+void Heap<T>::_AdjustDown(size_t parent)
+{
+	size_t child = parent * 2 + 1;
+	size_t size = this->_array.size();
+	while (child < size)
+	{
+		if (child + 1 < size && this->_array[child] < this->_array[child + 1])
+		{
+			++child;
+		}
+		if (this->_array[parent] < this->_array[child])
+		{
+			swap(this->_array[parent], this->_array[child]);
+			parent = child;
+			child = parent * 2 + 1;
+		}
+		else
+		{
+			break;
+		}
+	}
+}
+
+template <typename T>
+void Heap<T>::Push(const T& x)
+{
+	size_t size = this->_array.size();
+	this->_array.push_back(x);
+	this->_AdjustUp(size);
+}
+
+template <typename T>
+void Heap<T>::Pop()
+{
+	assert(!this->_array.empty());
+	size_t size = this->_array.size();
+	swap(this->_array[0], this->_array[size - 1]);
+	this->_array.pop_back();
+	this->_AdjustDown(0);
+}
+
+template <typename T>
+void Heap<T>::_AdjustUp(size_t pos)
+{
+	assert(pos<this->_array.size());
+	int parent = (pos - 1) / 2;
+	int child = pos;
+	while (parent >= 0 && this->_array[child] > this->_array[parent])
+	{
+		swap(this->_array[child], this->_array[parent]);
+		child = parent;
+		parent = (child - 1) / 2;
+	}
+}
+
+template <typename T>
+T Heap<T>::GetTop()const
+{
+	assert(!this->_array.empty());
+	return this->_array[0];
+}
+
+template <typename T>
+bool Heap<T>::Empty()const
+{
+	return this->_array.empty();
+}
+
+template <typename T>
+size_t Heap<T>::size()const
+{
+	return this->_array.size();
+}
+
+template <typename T>
+std::ostream& operator<<(std::ostream& out, const Heap<T>& heap)
+{
+	size_t size = heap._array.size();
+	for (size_t i = 0; i < size; ++i)
+	{
+		out << heap._array[i] << " ";
+	}
+	out << endl;
+	return out;
+}
+
+//堆排序
+template <typename T>
+void HeapSort(T* array, size_t size)
+{
+	//建初堆
+	Heap<T> heap(array, size);
+	for (int i = size - 1; i >= 0; --i)
+	{
+		array[i] = heap.GetTop();
+		heap.Pop();
+	}
+}

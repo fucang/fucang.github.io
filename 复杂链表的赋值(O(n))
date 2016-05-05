@@ -1,0 +1,159 @@
+//ComplexListCopy.h
+#pragma once
+#ifndef __COMPLEX_LIST_COPY_H__
+#define __COMPLEX_LIST_COPY_H__
+
+#include <iostream>
+#include <cassert>
+
+struct ComplexListNode 
+{
+	int label;
+	ComplexListNode* next;
+	ComplexListNode* random;
+	ComplexListNode(int x) :label(x), next(NULL), random(NULL) 
+	{}
+};
+
+//O(n)
+//复制
+ComplexListNode* CloneNodes(ComplexListNode* pHead)
+{
+	if (pHead == NULL)
+	{
+		return NULL;
+	}
+	ComplexListNode* cur = pHead;
+	while (cur)
+	{
+		ComplexListNode* next = cur->next;
+		cur->next = new ComplexListNode(cur->label);
+		cur = cur->next;
+		cur->next = next;
+		cur = cur->next;
+	}
+
+	return pHead;
+}
+
+//链接Random
+ComplexListNode* ConnectSiblingNodes(ComplexListNode* pHead)
+{
+	if (pHead == NULL)
+	{
+		return NULL;
+	}
+	ComplexListNode* cur = pHead;
+	while (cur)
+	{
+		if (cur->random)
+		{
+			cur->next->random = cur->random->next;
+		}
+		cur = cur->next->next;
+	}
+	return pHead;
+}
+
+//分解
+ComplexListNode* ReconnectNodes(ComplexListNode* pHead)
+{
+	if (pHead == NULL)
+	{
+		return NULL;
+	}
+	ComplexListNode* headDest = pHead->next;
+	ComplexListNode* head = headDest;
+	ComplexListNode* headSrc = pHead;
+	while (headSrc)
+	{
+		headSrc->next = headDest->next;
+		headSrc = headSrc->next;
+		if (headDest->next)
+		{
+			headDest->next = headSrc->next;
+		}
+		headDest = headDest->next;
+	}
+
+	return head;
+}
+
+ComplexListNode* CloneComplexList(ComplexListNode* pHead)
+{
+	CloneNodes(pHead);
+	ConnectSiblingNodes(pHead);
+	ComplexListNode* head = ReconnectNodes(pHead);
+	return head;
+}
+
+void PrintListNextRandom(ComplexListNode* pHead)
+{
+	if (pHead == NULL)
+	{
+		return;
+	}
+	ComplexListNode* cur = pHead;
+	while (cur)
+	{
+		std::cout << "(" << cur->label << ", ";
+		if (cur->random)
+		{
+			std::cout << cur->random->label << ", ";
+		}
+		else
+		{
+			std::cout << "NULL , ";
+		}
+		if (cur->next)
+		{
+			std::cout << cur->next->label << ") -> ";
+		}
+		else
+		{
+			std::cout << "NULL )";
+		}
+		cur = cur->next;
+	}
+	std::cout << endl;
+}
+
+#endif /*__COMPLEX_LIST_COPY_H__*/
+
+//测试
+#define _CRT_SECURE_NO_WARNINGS 1
+#include <iostream>
+using namespace std;
+
+#include "ComplexListCopy.h"
+
+void Test()
+{
+	ComplexListNode r1(1);
+	ComplexListNode r2(2);
+	ComplexListNode r3(3);
+	ComplexListNode r4(4);
+	ComplexListNode r5(5);
+	r1.next = &r2;
+	r2.next = &r3;
+	r3.next = &r4;
+	r4.next = &r5;
+
+	r1.random = &r3;
+	r2.random = &r5;
+	r4.random = &r2;
+
+	PrintListNextRandom(&r1);
+
+	ComplexListNode* nhead = CloneComplexList(&r1);
+	PrintListNextRandom(&r1);
+	PrintListNextRandom(nhead);
+	std::cout << "海到无涯天作岸，山登绝顶我为峰" << endl;
+}
+
+int main()
+{
+	Test();
+	system("pause");
+	return 0;
+}

@@ -1,0 +1,161 @@
+#ifndef __SHARED_PTR_HPP__
+#define __SHARED_PTR_HPP__
+
+#include <iostream>
+using namespace std;
+#include <memory>
+struct ListNode
+{
+	shared_ptr<ListNode> _prev; //shared_ptr为库文件中实现的，只需包memory即可使用
+	shared_ptr<ListNode> _next;
+	~ListNode()
+	{
+		cout << "~ListNode()" << endl;
+	}
+};
+
+//struct ListNode
+//{
+//	weak_ptr<ListNode> _prev;
+//	weak_ptr<ListNode> _next;
+//	~ListNode()
+//	{
+//		cout << "~ListNode()" << endl;
+//	}
+//};
+//int main()
+//{
+//	shared_ptr<ListNode> prev;
+//	shared_ptr<ListNode> next;
+//	prev->_next = next;
+//	next->_prev = prev;
+//}
+
+template <typename T>
+struct Del //普通的，调用delete
+{
+	void operator()(T* ptr)
+	{
+		delete ptr;
+	}
+};
+
+struct Fclose //关闭文件，调用fclose
+{
+	void operator()(FILE* file)
+	{
+		if (file)
+		{
+			fclose(file);
+		}
+	}
+};
+
+struct Free //mallo,调用free
+{
+	void operator()(void* ptr)
+	{
+		free(ptr);
+	}
+};
+
+template <typename T,class Deleter = Del<T>>
+class SharedPtr
+{
+public:
+	SharedPtr(T* ptr);
+	SharedPtr(T* ptr, Deleter del);
+	SharedPtr(const SharedPtr<T, Deleter>& ap);
+	~SharedPtr();
+	//SharedPtr<T, Deleter>& operator=(const SharedPtr<T, Deleter>& ptr);//传统写法
+	//现代写法
+	SharedPtr<T, Deleter>& operator=(SharedPtr<T, Deleter> ap);
+	T& operator*()const;
+	T* operator->()const;
+	long GetCount()const;
+	T* GetPtr()const;
+protected:
+	void _Realease();
+protected:
+	T* _ptr;
+	long* _pCount;
+	Deleter _del;
+};
+
+template <typename T, class Deleter = Del<T>>
+SharedPtr<T, Deleter>::SharedPtr(T* ptr) :_ptr(ptr), _pCount(new long(1))
+{}
+
+template <typename T, class Deleter = Del<T>>
+SharedPtr<T, Deleter>::SharedPtr(T* ptr, Deleter del) : _ptr(ptr), _pCount(new long(1)), _del(del)
+{}
+
+template <typename T, class Deleter = Del<T>>
+SharedPtr<T, Deleter>::SharedPtr(const SharedPtr<T, Deleter>& ap) : _ptr(ap._ptr), _pCount(ap._pCount), _del(ap._del)
+{
+	++(*this->_pCount);
+}
+
+template <typename T, class Deleter = Del<T>>
+SharedPtr<T, Deleter>::~SharedPtr()
+{
+	this->_Realease();
+}
+
+//template <typename T, class Deleter = Del<T>>//传统写法
+//SharedPtr<T, Deleter>& SharedPtr<T, Deleter>::operator=(SharedPtr<T, Deleter> ap)
+//{
+//	if (this->_ptr != ap._ptr)
+//	{
+//		this->_Realease();
+//		this->_ptr = ap._ptr;
+//		this->_pCount = ap._pCount;
+//		++(*this->_pCount);
+//	}
+//	return *this;
+//}
+
+template <typename T, class Deleter = Del<T>>//现代写法
+SharedPtr<T, Deleter>& SharedPtr<T, Deleter>::operator=(SharedPtr<T, Deleter> ap)
+{
+	swap(this->_ptr, ap._ptr);
+	swap(this->_pCount, ap._pCount);
+	swap(this->_del, ap._del);
+	return *this;
+}
+
+template <typename T, class Deleter = Del<T>>
+T& SharedPtr<T, Deleter>::operator*()const
+{
+	return *(this->_ptr);
+}
+
+template <typename T, class Deleter = Del<T>>
+T* SharedPtr<T, Deleter>::operator->()const
+{
+	return this->_ptr;
+}
+
+template <typename T, class Deleter = Del<T>>
+long SharedPtr<T, Deleter>::GetCount()const
+{
+	return *(this->_pCount);
+}
+
+template <typename T, class Deleter = Del<T>>
+T* SharedPtr<T, Deleter>::GetPtr()const
+{
+	return this->_ptr;
+}
+
+template <typename T, class Deleter = Del<T>>
+void SharedPtr<T, Deleter>::_Realease()
+{
+	if (--(*this->_pCount) == 0)
+	{
+		_del(_ptr);
+		delete this->_pCount;
+	}
+}
+
+#endif /*__SHARED_PTR_HPP__*/

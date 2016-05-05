@@ -1,0 +1,476 @@
+#define _CRT_SECURE_NO_WARNINGS 1
+
+#include "BigData.h"
+
+BigData::BigData(INT64 value) :_value(value)
+{
+	this->_Int64ToStr();
+}
+
+BigData::BigData(const char* str) : _value(0)
+{
+	assert(str);
+	char* temp = (char*)str;
+	char cSign = '+';
+	while (isspace(*temp)) //*temp == ' '不能消除tab
+	{
+		++temp;
+	}
+	if ((*temp == '-') || (*temp == '+'))
+	{
+		cSign = *temp;
+		++temp;
+	}
+	this->_pData.resize(strlen(str) + 1);
+	this->_pData[0] = cSign;
+	int iCount = 1;
+	while (*temp == '0')//处理000123
+	{
+		++temp;
+	}
+	while ((*temp >= '0') && (*temp <= '9'))
+	{
+		this->_value = this->_value * 10 + (*temp - '0');
+		this->_pData[iCount++] = *temp++;
+	}
+	this->_pData.resize(iCount);
+	if (cSign == '-')
+	{
+		this->_value = 0 - this->_value;
+	}
+	if (!this->_IsINT64OverFlow())//溢出
+	{
+		this->_value = 0xCCCCCCCCCCCCCCCC;
+	}
+}/*BigData(const char* str)*/
+
+BigData BigData::operator+(const BigData& bigData)
+{
+	if (this->_IsINT64OverFlow() && bigData._IsINT64OverFlow()) //两个均没有溢出
+	{
+		if (this->_pData[0] != bigData._pData[0])//异号，相加肯定没有溢出
+		{
+			return BigData(this->_value + bigData._value);
+		}
+		else //两个同号
+		{
+			if ((this->_value>0 && MAXINT64 - this->_value >= bigData._value) ||  //结果仍没有溢出
+				(this->_value<0 && MININT64 - this->_value <= bigData._value))
+			{
+				return BigData(this->_value + bigData._value);
+			}	
+		}
+	}
+	if (this->_pData[0] == bigData._pData[0]) //两个同号
+	{
+		return BigData(this->AddStr(bigData).c_str());
+	}
+	BigData temp1((this->_pData).c_str()); //有溢出，异号，调用减
+	BigData temp2((bigData._pData).c_str());
+	if (this->_pData[0] == '+')
+	{
+		temp2._pData[0] = '+';
+		temp2._value = 0 - temp2._value;
+		return (temp1.SubStr(temp2)).c_str();
+	}
+	else
+	{
+		temp1._pData[0] = '+';
+		temp1._value = 0 - temp1._value;
+		return (temp2.SubStr(temp1)).c_str();
+	}
+}
+std::string BigData::AddStr(const BigData& bigData)const
+{
+	std::string left = this->_pData;
+	std::string right = bigData._pData;
+	char cSign = this->_pData[0];
+	size_t iLSize = left.size();
+	size_t iRSize = right.size();
+	if (iLSize < iRSize)
+	{
+		std::swap(left, right);
+		std::swap(iLSize, iRSize);
+	}
+	std::string ret;
+	ret.resize(iLSize + 1);
+	ret[0] = cSign;
+	int step = 0;//进位
+	for (size_t iCount = 1; iCount < iLSize; ++iCount)
+	{
+		char ch = left[iLSize - iCount] - '0' + step;
+		if (iCount < iRSize)
+		{
+			ch += (right[iRSize - iCount] - '0');
+		}
+		ret[iLSize - iCount + 1] = ch % 10 + '0';
+		step = ch / 10;
+	}
+	ret[1] = step + '0';
+	return ret;
+}
+
+BigData BigData::operator-(const BigData& bigData)
+{
+	if (this->_IsINT64OverFlow() && bigData._IsINT64OverFlow())//无溢出
+	{
+		if (this->_pData[0] == bigData._pData[0]) //同号，相减后肯定无溢出
+		{
+			return this->_value - bigData._value;
+		}
+		else
+		{
+			if ((this->_value > 0 && MAXINT64 + bigData._value >= this->_value)||
+				(this->_value < 0 && MININT64 + bigData._value <= this->_value))
+				//结果无溢出
+			{
+				return this->_value - bigData._value;
+			}
+		}
+	}
+	if (this->_pData[0] == bigData._pData[0])
+	{
+		return BigData(this->SubStr(bigData).c_str());
+	}
+	BigData temp((bigData._pData).c_str()); //异号，有溢出 -3-5=-3+(-5) 3-(-5)=3+5
+	temp._pData[0] = this->_pData[0];
+	temp._value = 0 - temp._value;
+	return this->AddStr(temp).c_str();
+}/*operator-*/
+
+std::string BigData::SubStr(const BigData& bigData)const
+{
+	std::string ret;
+	std::string left = this->_pData;
+	std::string right = bigData._pData;
+	char cSign = this->_pData[0];
+	size_t iLSize = left.size();
+	size_t iRSize = right.size();
+	if (cSign == '-')
+	{
+		std::swap(left, right);
+		std::swap(iLSize, iRSize);
+	}
+	if ((iLSize < iRSize) || (iLSize == iRSize && left < right))
+	{
+		std::swap(left, right);
+		std::swap(iLSize, iRSize);
+		cSign = '-';
+	}
+	else
+	{
+		cSign = '+';
+	}
+	ret.resize(iLSize);
+	ret[0] = cSign;
+	char step = 0;
+	for (size_t iCount = 1; iCount < iLSize; ++iCount)
+	{
+		int ch = left[iLSize - iCount] - '0' - step;
+		if (iCount < iRSize)
+		{
+			ch -= (right[iRSize - iCount] - '0');
+		}
+		if (ch < 0)
+		{
+			step = 1;
+			ch = ch + 10;
+		}
+		else
+		{
+			step = 0;
+		}
+		ret[iLSize - iCount] = ch + '0';
+	}
+	return ret;
+}/*SubStr(const BigData& bigData)*/
+
+BigData BigData::operator*(const BigData& bigData)
+{
+	if (this->_pData[1] == '0' || bigData._pData[1] == '0')
+	{
+		return INT64(0);
+	}
+	char cSign = '+';
+	if (this->_pData[0] != bigData._pData[0])
+	{
+		cSign = '-';
+	}
+	if (this->_pData[1] == '1')
+	{
+		std::string ret = bigData._pData;
+		ret[0] = cSign;
+		return ret.c_str();
+	}
+	if (bigData._pData[1] == '1')
+	{
+		std::string ret = this->_pData;
+		ret[0] = cSign;
+		return ret.c_str();
+	}
+	if (this->_IsINT64OverFlow() && bigData._IsINT64OverFlow()) //没溢出
+	{		
+		if ((cSign == '+') &&  //同号且结果没溢出
+			((this->_value > 0 && MAXINT64 / this->_value >= bigData._value) ||
+			(this->_value < 0 && MAXINT64 / this->_value <= bigData._value)))
+		{
+			return this->_value * bigData._value;
+		}
+		if ((cSign == '-') &&  //异号且结果没溢出
+			((this->_value > 0 && MININT64 / this->_value <= bigData._value) ||
+			(this->_value < 0 && MININT64 / this->_value >= bigData._value)))
+		{
+			return this->_value * bigData._value;
+		}
+	}
+	return this->MulStr(bigData).c_str();
+}
+
+std::string BigData::MulStr(const BigData& bigData)const
+{
+	char cSign = '+';
+	if (this->_pData[0] != bigData._pData[0])
+	{
+		cSign = '-';
+	}
+	std::string left = this->_pData;
+	std::string right = bigData._pData;
+	size_t iLSize = left.size();
+	size_t iRSize = right.size();
+	std::string ret;
+	ret.resize(iLSize + iRSize - 1);
+	ret[0] = cSign;
+	if (iLSize < iRSize)
+	{
+		std::swap(left, right);
+		std::swap(iLSize, iRSize);
+	}
+	int step = 0;
+	for (int iRCount = 0; iRCount < iRSize - 1; ++iRCount)
+	{
+		step = 0;
+		int chR = right[iRSize - 1 - iRCount] - '0';
+		if (0 == chR)
+		{
+			continue;
+		}
+		for (int iLCount = 1; iLCount < (int)iLSize; ++iLCount)
+		{
+			int ch = chR * (left[iLSize - iLCount] - '0')
+				+ step + ret[iLSize + iRSize - 1 - iLCount - iRCount];
+			ret[iLSize + iRSize - 1 - iLCount - iRCount] = ch % 10;
+			step = ch / 10;
+		}
+		ret[iRSize - iRCount - 1] += step;
+	}
+	for (int iCount = 1; iCount < iLSize + iRSize - 1; ++iCount)
+	{
+		ret[iCount] += '0';
+	}
+	return ret.c_str();
+}
+
+BigData BigData::operator/(const BigData& bigData)
+{
+	//right == 0
+	if (bigData._pData[1] == '0')
+		assert(false);
+	
+	//left == 0
+	if (this->_pData[1] == '0')
+	{
+		return INT64(0);
+	}
+
+	//无溢出，结果肯定无溢出
+	if (this->_IsINT64OverFlow() && bigData._IsINT64OverFlow())
+	{
+		return this->_value / bigData._value;
+	}
+	char cSign = '+';
+	if (this->_pData[0] != bigData._pData[0])
+	{
+		cSign = '-';
+	}
+	size_t iLSize = this->_pData.size();
+	size_t iRSize = bigData._pData.size();
+
+	//left < right
+	if ((iLSize < iRSize) || 
+		(iLSize == iRSize && 
+			strcmp(this->_pData.c_str() + 1, bigData._pData.c_str() + 1) < 0))
+	{
+		return INT64(0);
+	}
+
+	//right == +1 or -1
+	if (iRSize == 2 && bigData._pData[1] == '1')
+	{
+		std::string ret = this->_pData;
+		ret[0] = cSign;
+		return ret.c_str();
+	}
+
+	//left == right
+	if (strcmp(this->_pData.c_str() + 1, bigData._pData.c_str() + 1) == 0)
+	{
+		std::string ret = "+1";
+		ret[0] = cSign;
+		return ret.c_str();
+	}
+
+	//有溢出,一般情况
+	return this->DivStr(bigData).c_str();
+}
+
+std::string BigData::DivStr(const BigData& bigData)const 
+{
+	char cSign = '+';
+	if (this->_pData[0] != bigData._pData[0])
+	{
+		cSign = '-';
+	}
+	size_t iLsize = this->_pData.size();
+	size_t iRSize = bigData._pData.size();
+	std::string ret;
+	ret.append(1, cSign);
+
+	std::string leftStr = this->_pData.c_str(); //否则会改变this
+	std::string rightStr = bigData._pData.c_str();
+	char* left = (char*)(leftStr.c_str() + 1);
+	char* right = (char*)(rightStr.c_str() + 1);
+	int iCount = iRSize - 1;
+
+	while (true)
+	{
+		int slenLeft = strlen(left);
+		int slenRight = strlen(right);
+		if ((slenLeft < slenRight) || (slenLeft == slenRight&&strcmp(left, right) < 0))
+		{
+			break;
+		}
+		if (!IsLeftStrBig(left, iCount, right, iRSize - 1)) //left < right
+		{
+			ret.append(1, '0');
+			++iCount;
+			continue;
+		}
+		char ch = LoopSub(left, iCount, right, iRSize - 1);
+		while (*left == '0')
+		{
+			++left;
+			--iCount;
+		}
+		++iCount; //取得下一位
+		ret.append(1, ch);
+	}
+
+	return ret.c_str();
+}
+
+char BigData::LoopSub(char* pLeft, int iLSize, const char* pRight, int iRSize)const
+{
+	char ret = '0';
+	while (IsLeftStrBig(pLeft, iLSize, pRight, iRSize))
+	{
+		ret++;
+		for (int i = iLSize - 1; (i >= 0) && (iRSize + i - iLSize >= 0); --i)
+		{		
+			pLeft[i] -= (pRight[iRSize + i - iLSize] - '0');
+			if (pLeft[i] < '0')
+			{
+				pLeft[i] += 10;
+				--pLeft[i - 1];
+			}		
+		}//for
+		//去0 eg：0334
+		while (*pLeft == '0')
+		{
+			++pLeft;
+			--iLSize;
+		}
+	}//while
+
+	return ret;
+}
+
+bool BigData::IsLeftStrBig(const char* pLeft, int iLSize, const char* pRight, int iRSize)const
+{
+	if ((iLSize > iRSize) ||
+		(iLSize == iRSize && strcmp(pLeft, pRight) >= 0))
+	{
+		return true;
+	}
+	return false;
+}
+
+void BigData::_Int64ToStr()
+{
+	char cSign = '+';
+	if (this->_value < 0)
+	{
+		cSign = '-';
+	}
+	this->_pData.append(1, cSign);
+	if (this->_value == 0)
+	{
+		this->_pData.append(1, '0');
+		return;
+	}
+	INT64 temp = this->_value;
+
+	while (temp)
+	{
+		this->_pData.append(1, (temp % 10 + '0'));
+		temp /= 10;
+	}
+	char* left = (char*)(this->_pData.c_str() + 1);
+	char* right = left + this->_pData.size() - 2;
+	while (left < right)
+	{
+		char ch = *left;
+		*left++ = *right;
+		*right-- = ch;
+	}
+}/*void BigData::_Int64ToStr()*/
+
+bool BigData::_IsINT64OverFlow()const
+{
+	std::string max = "+9223372036854775807";
+	std::string min = "-9223372036854775808";
+	size_t size = this->_pData.size();
+	if (size < max.size())
+	{
+		return true;
+	}
+	if ((this->_pData[0] == '+') && (size == max.size()) && (this->_pData <= max))
+	{
+		return true;//返回true没有溢出
+	}
+	if ((this->_pData[0] == '-') && (size == min.size()) && (this->_pData <= min))
+	{
+		return true;
+	}
+	return false;
+}/*bool BigData::_IsINT64OverFlow()const*/
+
+std::ostream& operator<<(std::ostream& _cout, const BigData& bigData)
+{
+	if (bigData._IsINT64OverFlow())//没有溢出
+	{
+		_cout << bigData._value << std::endl;
+	}
+	else
+	{
+		if (bigData._pData[0] == '+')
+		{
+			_cout << bigData._pData.c_str() + 1 << std::endl;
+		}
+		else
+		{
+			_cout << bigData._pData << std::endl;
+		}
+	}
+	return _cout;
+}
+

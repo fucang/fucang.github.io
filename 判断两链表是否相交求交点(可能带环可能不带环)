@@ -1,0 +1,202 @@
+//ListMeet.h
+#pragma once
+#ifndef __LIST_MEET_H__
+#define __LIST_MEET_H__
+
+#include <assert.h>
+
+struct ListNode
+{
+	int _data;
+	ListNode* _next;
+	ListNode(int data = 0) :_data(data), _next(NULL)
+	{}
+};
+
+struct MeetListNode
+{
+	ListNode* _oneMeet;
+	ListNode* _twoMeet;
+	MeetListNode(ListNode* one, ListNode* two = NULL) :_oneMeet(one), _twoMeet(two)
+	{}
+};
+
+//判断链表有没有环
+ListNode* IsHaveLoop(ListNode* head)
+{
+	if (head == NULL)
+	{
+		return NULL;
+	}
+	ListNode* slow = head;
+	ListNode* fast = head;
+	while (fast&&fast->_next)
+	{
+		slow = slow->_next;
+		fast = fast->_next->_next;
+		if (slow == fast)
+		{
+			return slow;
+		}
+	}
+	return NULL;
+}
+
+//计算链表中一个结点到另一个结点之间的长度
+size_t ListLength(ListNode* head, ListNode* tail = NULL)
+{
+	if (head == NULL)
+	{
+		return 0;
+	}
+	ListNode* cur = head;
+	size_t len = 0;
+	while (cur != tail)
+	{
+		++len;
+		cur = cur->_next;
+	}
+	return len;
+}
+
+//判断一个结点是否能到另一个结点
+bool NodeToOtherNode(ListNode* nodeA, ListNode* nodeB)
+{
+	if (nodeA == NULL || nodeB == NULL)
+	{
+		return true;
+	}
+	if (nodeA == nodeB)
+	{
+		return true;
+	}
+	ListNode* curA = nodeA->_next;
+	ListNode* curB = nodeB;
+	while (curA != nodeA)
+	{
+		if (curA == curB)
+		{
+			return true;
+		}
+		curA = curA->_next;
+	}
+	return false;
+}
+
+//求环的入口结点
+ListNode* EntryListNode(ListNode* head, ListNode* meetNode)
+{
+	assert(meetNode);
+	size_t loopLen = ListLength(meetNode->_next, meetNode) + 1;
+	size_t headToMeetLen = ListLength(head, meetNode) + 1;
+	int subLen = headToMeetLen - loopLen - 1;
+	ListNode* curHead = head;
+	ListNode* curMeet = meetNode;
+	if (subLen > 0)
+	{
+		while (subLen)
+		{
+			curHead = curHead->_next;
+			--subLen;
+		}
+	}
+	else if (subLen < 0)
+	{
+		while (subLen)
+		{
+			curMeet = curMeet->_next;
+			++subLen;
+		}
+	}
+	while (curHead != curMeet)
+	{
+		curHead = curHead->_next;
+		curMeet = curMeet->_next;
+	}
+	return curMeet;
+}
+
+//链表不带环求结点或带环但环的入口点相同
+ListNode* ListMeetNoLoop(ListNode* headA, ListNode* headB, ListNode* meet = NULL)
+{
+	ListNode* curA = headA;
+	ListNode* curB = headB;
+	size_t lenA = ListLength(headA, meet);
+	size_t lenB = ListLength(headB, meet);
+	int subLen = (int)(lenA - lenB);
+	if (subLen > 0)
+	{
+		while (subLen)
+		{
+			curA = curA->_next;
+			--subLen;
+		}
+	}
+	else if (subLen < 0)
+	{
+		while (subLen)
+		{
+			curB = curB->_next;
+			++subLen;
+		}
+	}
+	while (curA != meet && curB != meet)
+	{
+		if (curA == curB)
+		{
+			return curA; // 1、不相交
+		}
+		curA = curA->_next;
+		curB = curB->_next;
+	}
+	return meet; // 2、相交
+}
+
+//判断链表是否相交，若相交求交点
+MeetListNode ListMeetNode(ListNode* headA, ListNode* headB)
+{
+	if (headA == NULL || headB == NULL)
+	{
+		return MeetListNode(NULL);
+	}
+
+	ListNode* meetA = IsHaveLoop(headA);
+	ListNode* meetB = IsHaveLoop(headB);
+
+	//3、一个带环一个不带环肯定不相交
+	if ((meetA == NULL && meetB != NULL) || (meetB == NULL && meetA != NULL))
+	{
+		return MeetListNode(NULL);
+	}
+
+	//1 or 2、两个都不带环
+	if (meetA == NULL && meetB == NULL)
+	{
+		return MeetListNode(ListMeetNoLoop(headA, headB));
+	}
+	
+	//4 or 5、两个都带环
+	if (meetA&&meetB)
+	{
+		bool AToB = NodeToOtherNode(meetA, meetB);
+		if (AToB == false)
+		{
+			return NULL; //4、两个带环链表不相交
+		}
+		ListNode* entryA = EntryListNode(headA, meetA);
+		ListNode* entryB = EntryListNode(headB, meetB);
+
+		if (entryA == entryB) //5、环的入口结点相同
+		{
+			return MeetListNode(ListMeetNoLoop(headA, headB, entryA), entryA);
+		}
+		else //6、环的入口结点不相同
+		{
+			return MeetListNode(entryA, entryB);
+		}
+	}
+}
+
+#endif /*__LIST_MEET_H__*/
+
+//测试用例 https://github.com/fucang/fucang.github.io/blob/浮滄的github/判断两链表是否相交求交点(测试用例)

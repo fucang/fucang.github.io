@@ -1,0 +1,51 @@
+//Generalized.h
+#pragma once 
+#ifndef __GENERALIZED_H__
+#define __GENERALIZED_H__
+
+enum Type
+{
+	HEAD,
+	VALUE,
+	SUB,
+};
+
+struct GeneralizedNode
+{
+	Type _type;
+	GeneralizedNode* _next;
+	union
+	{
+		int _value;
+		GeneralizedNode* _sublink;
+	};
+	GeneralizedNode()
+	{}
+	GeneralizedNode(Type type, const int value = 0) :_type(type), _next(NULL), _value(value)
+	{}
+};
+
+class Generalized
+{
+public:
+	Generalized();
+	Generalized(const char* str);
+	Generalized(const Generalized& g);
+	Generalized& operator=(const Generalized& g);
+	~Generalized();
+	void Print()const;
+	size_t Size()const;
+	size_t Length()const;
+	size_t Depth()const;
+protected:
+	GeneralizedNode* _CreateList(const char* &str);
+	GeneralizedNode* _Copy(GeneralizedNode* head);
+	void _Destory(GeneralizedNode* head);
+	void _PrintGeneral(GeneralizedNode* head)const;
+	size_t _SizeGeneralized(GeneralizedNode* head)const;
+	size_t _DepthGeneralized(GeneralizedNode* head)const;
+protected:
+	GeneralizedNode* _head;
+};
+
+#endif /*__GENERALIZED_H__*/

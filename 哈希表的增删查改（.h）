@@ -1,0 +1,82 @@
+#pragma once 
+#ifndef _HASH_TABLE_H__
+#define _HASH_TABLE_H__
+
+#include <string>
+
+enum Status
+{
+	EXIST,
+	DELETE,
+	EMPTY,
+};
+
+template <class K>
+struct DefaultHashFuncer
+{
+	size_t operator()(const K& key)const
+	{
+		return key;
+	}
+};
+
+//模板特化
+template<>
+struct DefaultHashFuncer<string>
+{
+	size_t operator()(const string& key)const
+	{
+		size_t seed = 131; //31,131,1313,13131,...
+		size_t hash = 0;
+		const char* str = key.c_str();
+		while (*str)
+		{
+			hash = hash*seed + (*str++);
+		}
+		return (hash & 0x7FFFFFFF);
+	}
+};
+
+template <class K, class V>
+struct KeyValue
+{
+	K _key;
+	V _value;
+	KeyValue(const K& key = K(), const V& value = V())
+		:_key(key), _value(value)
+	{}
+
+};
+
+template <class K, class V, class HashFuncer = DefaultHashFuncer<K>>
+class HashTable
+{
+	typedef KeyValue<K, V> KV;
+
+public:
+	HashTable();
+	HashTable(size_t size);
+	HashTable(const KV* tables, size_t len, size_t size);
+	~HashTable();
+
+	HashTable(const HashTable<K, V, HashFuncer>& htb);
+	HashTable<K,V,HashFuncer>& operator=(HashTable<K, V, HashFuncer> htb);
+
+	void Swap(HashTable<K,V,HashFuncer>& kv);
+	bool Insert(const KV& kv);
+	int Find(const KV& kv)const;
+	bool Delete(const KV& kv);
+
+	void Print()const;
+	
+protected:
+	void _CheckCapacity();
+
+protected:
+	KV* _tables;
+	Status* _status;
+	size_t _size;
+	size_t _capacity;
+};
+
+#endif /*_HASH_TABLE_H__*/

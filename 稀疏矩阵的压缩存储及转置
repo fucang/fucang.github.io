@@ -1,0 +1,116 @@
+template <typename T>
+struct Triple
+{
+	int _row;
+	int _col;
+	T _value;
+};
+
+template <typename T>
+class SparseMatrix
+{
+public:
+	SparseMatrix<T>::SparseMatrix();
+	SparseMatrix(const T* array, size_t row, size_t col, const T& invalid);
+	~SparseMatrix();
+	void Display()const;
+	SparseMatrix<T> Transport()const;
+	SparseMatrix<T> FastTransport()const;
+protected:
+	vector<Triple<T>> _array;
+	size_t _rowCount;
+	size_t _colCount;
+	T _invalid;
+};
+
+//.hpp
+template <typename T>
+SparseMatrix<T>::SparseMatrix(){}
+template <typename T>
+SparseMatrix<T>::SparseMatrix(const T* array, size_t row, size_t col, const T& invalid)
+:_rowCount(row), _colCount(col), _invalid(invalid)
+{
+	assert(array);
+	for (size_t i = 0; i < row; ++i)
+	{
+		for (size_t j = 0; j < col; ++j)
+		{
+			if (array[i*col + j] != invalid)
+			{
+				this->_array.push_back({ i, j, array[i*col + j] });
+			}
+		}
+	}
+}
+template <typename T>
+SparseMatrix<T>::~SparseMatrix()
+{}
+template <typename T>
+void SparseMatrix<T>::Display()const
+{
+	size_t size = this->_array.size();
+	size_t iCount = 0;
+	for (size_t i = 0; i < this->_rowCount; ++i)
+	{
+		for (size_t j = 0; j < this->_colCount; ++j)
+		{
+			if (iCount < size && i == this->_array[iCount]._row && j == this->_array[iCount]._col)
+			{
+				cout << this->_array[iCount]._value << " ";
+				++iCount;
+			}
+			else
+			{
+				cout << this->_invalid << " ";
+			}
+		}
+		cout << endl;
+	}
+}
+template <typename T>
+SparseMatrix<T> SparseMatrix<T>::Transport()const
+{
+	SparseMatrix<T> ret;
+	ret._rowCount = this->_colCount;
+	ret._colCount = this->_rowCount;
+	ret._invalid = this->_invalid;
+	size_t size = this->_array.size();
+	for (size_t col = 0; col < this->_colCount; ++col)
+	{
+		for (size_t iCount = 0; iCount < size; ++iCount)
+		{
+			if (this->_array[iCount]._col == col)
+			{
+				ret._array.push_back({ this->_array[iCount]._col, this->_array[iCount]._row, 
+									this->_array[iCount]._value });
+			}
+		}
+	}
+	return ret;
+}
+template <typename T>
+SparseMatrix<T> SparseMatrix<T>::FastTransport()const
+{
+	SparseMatrix<T> ret;
+	ret._rowCount = this->_colCount;
+	ret._colCount = this->_rowCount;
+	ret._invalid = this->_invalid;
+	size_t size = this->_array.size();	
+	ret._array.resize(size);
+	vector<int> num(this->_colCount);
+	vector<int> pos(this->_colCount); //pos[i] = pos[i-1]+num[i-1] i>0
+	for (size_t i = 0; i < size; ++i)
+	{
+		++num[this->_array[i]._col];
+	}
+	for (size_t col = 1; col < this->_colCount; ++col)
+	{
+		pos[col] = pos[col - 1] + num[col - 1];
+	}
+	for (size_t i = 0; i < size; ++i)
+	{
+		ret._array[pos[this->_array[i]._col]++] = { this->_array[i]._col, this->_array[i]._row, this->_array[i]._value };
+	}
+
+	return ret;
+}

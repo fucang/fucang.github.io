@@ -1,0 +1,75 @@
+#ifndef __SHARED_PTR_HPP__
+#define __SHARED_PTR_HPP__
+
+#include <iostream>
+using namespace std;
+
+template <typename T>
+class SharedPtr
+{
+public:
+	SharedPtr(T* ptr = NULL);
+	~SharedPtr();
+	SharedPtr(const SharedPtr<T>& ap);
+	SharedPtr<T>& operator=(const SharedPtr<T>& ap);
+	T& operator[](const size_t index)const;
+	long GetCount()const;
+protected:
+	void _Realease();
+protected:
+	T* _ptr;
+	long* _pCount;
+};
+
+template <typename T>
+SharedPtr<T>::SharedPtr(T* ptr) :_ptr(ptr), _pCount(new long(1))
+{}
+
+template <typename T>
+SharedPtr<T>::~SharedPtr()
+{
+	this->_Realease();
+}
+
+template <typename T>
+SharedPtr<T>::SharedPtr(const SharedPtr<T>& ap) :_ptr(ap._ptr), _pCount(new long(ap._pCount))
+{
+	++(*this->_pCount);
+}
+
+template <typename T>
+SharedPtr<T>& SharedPtr<T>::operator=(const SharedPtr<T>& ap)
+{
+	if (this != &ap)
+	{
+		this->_Realease();
+		this->_ptr = ap._ptr;
+		this->_pCount = ap._pCount;
+		++(*this->_pCount);
+	}
+	return *this;
+}
+
+template <typename T>
+T& SharedPtr<T>::operator[](const size_t index)const
+{
+	return this->_ptr[index];
+}
+
+template <typename T>
+long SharedPtr<T>::GetCount()const
+{
+	return *this->_pCount;
+}
+
+template <typename T>
+void SharedPtr<T>::_Realease()
+{
+	if (--(*this->_pCount) == 0)
+	{
+		delete[] this->_ptr;
+		delete this->_pCount;
+	}
+}
+
+#endif /*__SHARED_PTR_HPP__*/

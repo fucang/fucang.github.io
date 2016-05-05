@@ -1,0 +1,56 @@
+//.h:
+//堆排序
+template <typename T>
+void HeapSort(T* array, size_t size);
+//建初堆
+template <typename T>
+void CrtHeap(T* array, size_t size);
+//下调
+template <typename T>
+void AdjustDown(T* array, size_t size, int parent = 0);
+
+//.hpp:
+template <typename T>
+void HeapSort(T* array, size_t size)
+{
+	CrtHeap(array, size);//建初堆
+	for (int i = size - 1; i > 0; --i)
+	{
+		swap(array[0], array[i]); //交换头和尾
+		AdjustDown(array, i - 1); //使得0...i-1也为堆
+	}
+}
+
+//建初堆
+template <typename T>
+void CrtHeap(T* array, size_t size)
+{
+	int parent = (size - 2) / 2;
+	for (int i = parent; i >= 0; --i)
+	{
+		AdjustDown(array, size, i);
+	}
+}
+//下调
+template <typename T>
+void AdjustDown(T* array, size_t size,int parent) 
+{
+	int child = parent * 2 + 1;
+	while (child < (int)size)
+	{
+		if (child + 1 < size && array[child] < array[child + 1])
+		{
+			++child;
+		}
+		if (array[parent] < array[child])
+		{
+			swap(array[parent], array[child]);
+			parent = child;
+			child = parent * 2 + 1;
+		}
+		else
+		{
+			break;
+		}
+	}
+}
