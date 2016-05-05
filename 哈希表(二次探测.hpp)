@@ -1,0 +1,196 @@
+#define _CRT_SECURE_NO_WARNINGS 1
+
+#include <iostream>
+using namespace std;
+#include "HashTable.h"
+
+/*
+protected:
+KV* _tables;
+Status* _status;
+size_t _size;
+size_t _capacity;
+*/
+template <class K, class V, class HashFuncer>
+HashTable<K, V, HashFuncer>::HashTable() :_tables(NULL), _status(NULL), _size(0), _capacity(0)
+{}
+
+template <class K, class V, class HashFuncer>
+HashTable<K, V, HashFuncer>::HashTable(size_t size)
+: _tables(new KV[size]), _status(new Status[size]), _size(0), _capacity(size)
+{
+	for (size_t i = 0; i < size; ++i)
+	{
+		_status[i] = EMPTY;
+	}
+}
+
+template <class K, class V, class HashFuncer>
+HashTable<K, V, HashFuncer>::HashTable(const KV* tables, size_t len, size_t size)
+: _tables(new KV[size]), _status(new Status[size]), _size(0), _capacity(size)
+{
+	for (size_t i = 0; i < size; ++i)
+	{
+		_status[i] = EMPTY;
+	}
+	for (size_t i = 0; i < len; ++i)
+	{
+		try
+		{
+			this->Insert(tables[i]);
+		}
+		catch (KV)
+		{
+			cout << "插入失败" << endl;
+		}
+	}
+}
+
+template <class K, class V, class HashFuncer>
+HashTable<K, V, HashFuncer>::~HashTable()
+{
+	if (this->_tables)
+	{
+		delete[] this->_tables;
+		this->_tables = NULL;
+	}
+	if (this->_status)
+	{
+		delete[] this->_status;
+		this->_status = NULL;
+	}
+	this->_size = 0;
+	this->_capacity = 0;
+}
+
+template <class K, class V, class HashFuncer>
+HashTable<K, V, HashFuncer>::HashTable(const HashTable<K, V, HashFuncer>& htb)
+:_tables(new KV[htb._capacity]), _status(new Status[htb._capacity]), _size(0), _capacity(htb._capacity)
+{
+	for (size_t i = 0; i < this->_capacity; ++i)
+	{
+		this->_status[i] = EMPTY;
+	}
+	for (size_t i = 0; i < htb._capacity; ++i)
+	{
+		if (htb._status[i] == EXIST)
+		{
+			this->_tables[i] = htb._tables[i];
+			this->_status[i] = EXIST;
+			++this->_size;
+		}
+	}
+
+}
+
+template <class K, class V, class HashFuncer>
+HashTable<K, V, HashFuncer>& HashTable<K, V, HashFuncer>::operator=(HashTable<K, V, HashFuncer> htb)
+{
+	this->Swap(htb);
+}
+
+template <class K, class V, class HashFuncer>
+bool HashTable<K, V, HashFuncer>::Insert(const KV& kv)
+{
+	this->_CheckCapacity();
+
+	if (this->Find(kv) != -1)
+	{
+		throw(KV());
+		return false;
+	}
+	DefaultHashFuncer<K> dhf;
+	size_t index = dhf(kv._key) % this->_capacity;//要改为仿函数
+	size_t tmpIndex = index;
+	size_t i = 1;
+	while (this->_status[index] == EXIST)
+	{
+		index = tmpIndex + i*i;
+		if (index >= this->_capacity)
+		{
+			index = 0;
+		}
+	}
+	++this->_size;
+	this->_tables[index] = kv;
+	this->_status[index] = EXIST;
+	return true;
+}
+
+template <class K, class V, class HashFuncer>
+int HashTable<K, V, HashFuncer>::Find(const KV& kv)const
+{
+	DefaultHashFuncer<K> dhf;
+	size_t index = dhf(kv._key) % this->_capacity; //要改为仿函数
+	size_t tmpIndex = index;
+	size_t i = 1;
+	while (this->_status[index] == EXIST)
+	{
+		if ((this->_tables[index])._key == kv._key)
+		{
+			return index;
+		}
+		index = tmpIndex + i*i;
+		if (index >= this->_capacity)
+		{
+			index = 0;
+		}
+	}
+	return -1;
+}
+
+template <class K, class V, class HashFuncer>
+bool HashTable<K, V, HashFuncer>::Delete(const KV& kv)
+{
+	int ret = this->Find(kv);
+	if (ret == -1)
+	{
+		throw(KV());
+		return false;
+	}
+	--this->_size;
+	this->_status[ret] = DELETE;
+	return true;
+}
+
+
+template <class K, class V, class HashFuncer>
+void HashTable<K, V, HashFuncer>::_CheckCapacity()
+{
+	if (this->_size * 10 >= this->_capacity * 7)
+	{
+		HashTable<K, V, HashFuncer> tmp(this->_tables, this->_size, 2 * this->_capacity);
+		this->Swap(tmp);
+	}
+}
+
+template <class K, class V, class HashFuncer>
+void HashTable<K, V, HashFuncer>::Swap(HashTable<K, V, HashFuncer>& tmp)
+{
+	swap(this->_tables, tmp._tables);
+	swap(this->_status, tmp._status);
+	swap(this->_size, tmp._size);
+	swap(this->_capacity, tmp._capacity);
+}
+
+template <class K, class V, class HashFuncer>
+void HashTable<K, V, HashFuncer>::Print()const
+{
+	for (size_t i = 0; i < this->_capacity; ++i)
+	{
+		if (this->_status[i] == EXIST)
+		{
+			printf("[%d]->:EXIST", i);
+			cout << (this->_tables[i])._key << "  " << (this->_tables[i])._value << endl;
+		}
+		else if (this->_status[i] == DELETE)
+		{
+			printf("[%d]->:DELETE", i);
+			cout << (this->_tables[i])._key << "  " << (this->_tables[i])._value << endl;
+		}
+		else
+		{
+			printf("[%d]->:EMPTY\n", i);
+		}
+	}
+}
