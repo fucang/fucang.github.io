@@ -1,0 +1,215 @@
+#define _CRT_SECURE_NO_WARNINGS 1
+
+#include "HashTableBucket.h"
+
+/*
+*protected:
+*	std::vector<Node*> _tables;	 //Node* _tables[]
+*	size_t _size;	
+*/
+
+template <class K, class V, class HashFuncer>
+HashTableBucket<K, V, HashFuncer>::HashTableBucket() :_size(0)
+{}
+
+template <class K, class V, class HashFuncer>
+HashTableBucket<K, V, HashFuncer>::~HashTableBucket()
+{
+	size_t tableSize = this->_tables.size();
+	for (size_t i = 0; i < tableSize; ++i)
+	{
+		Node* cur = this->_tables[i];
+		while (cur)
+		{
+			Node* del = cur;
+			cur = cur->_next;
+			delete del;
+			del = NULL;
+		}
+	}
+}
+
+template <class K, class V, class HashFuncer>
+HashTableBucket<K, V, HashFuncer>::HashTableBucket(const HashTableBucket<K, V, HashFuncer>& htable)
+:_size(htable._size)
+{
+	size_t tableSize = htable._tables.size();
+	this->_tables.resize(tableSize);
+	for (size_t i = 0; i < tableSize; ++i)
+	{
+		Node* cur = htable._tables[i];
+		while (cur)
+		{
+			Node* tmp = new Node(cur->_key, cur->_value);
+			tmp->_next = this->_tables[i];
+			this->_tables[i] = tmp;
+			cur = cur->_next;
+		}
+	}
+}
+
+template <class K, class V, class HashFuncer>
+HashTableBucket<K, V, HashFuncer>& HashTableBucket<K, V, HashFuncer>::operator=(const HashTableBucket<K, V, HashFuncer>& htable)
+{
+	this->Swap(htable);
+	return *this;
+}
+
+template <class K, class V, class HashFuncer>
+bool HashTableBucket<K, V, HashFuncer>::Insert(const K& key, const V& value)
+{
+	//检查载荷因子
+	this->_CheckExpand();
+
+	//检查是否已存在：若已存在，返回false即可，否则进行插入操作
+	if (this->Find(key) != NULL)
+	{
+		return false;
+	}
+
+	//进行插入操作
+	size_t index = _HashFuncer(key, this->_tables.size());
+	Node* insert = new Node(key, value);
+		//头插
+	insert->_next = this->_tables[index];
+	this->_tables[index] = insert;
+	++this->_size;
+
+	return true;
+}
+
+template <class K, class V, class HashFuncer>
+void HashTableBucket<K, V, HashFuncer>::_CheckExpand()
+{
+	if (this->_size >= this->_tables.size())
+	{
+		size_t newSize = _GetNextPrime(this->_size);//获取下一个素数
+		if (newSize == this->_size)
+		{
+			return;//已到最大素数，不用再新增空间
+		}
+		std::vector<Node*> newTables(newSize);
+		for (size_t index = 0; index < this->_size; ++index)
+		{
+			size_t newIndex = 0;
+			Node* cur = this->_tables[index];
+
+			while (cur)
+			{
+				Node* insert = cur;
+				cur = cur->_next;
+				newIndex = _HashFuncer(insert->_key, newSize);
+
+				//头插
+				insert->_next = newTables[newIndex];
+				newTables[newIndex] = insert;			
+			}
+		}/*for*/
+		swap(this->_tables, newTables);
+	}
+}
+
+template <class K, class V, class HashFuncer>
+size_t HashTableBucket<K, V, HashFuncer>::_HashFuncer(const K& key,size_t size)const
+{
+	return HashFuncer()(key)%size; //改为仿函数
+}
+
+template <class K, class V, class HashFuncer>
+size_t HashTableBucket<K, V, HashFuncer>::_GetNextPrime(size_t size)
+{
+	static const size_t _PrimeSize[] = { 
+		2ul,53ul, 97ul, 193ul, 389ul, 769ul,
+		1543ul, 3079ul, 6151ul, 12289ul, 24593ul,
+		49157ul, 98317ul, 196613ul, 393241ul, 786433ul,
+		1572869ul, 3145739ul, 6291469ul, 12582917ul, 25165843ul,
+		50331653ul, 100663319ul, 201326611ul, 402653189ul, 805306457ul,
+		1610612741ul, 3221225473ul, 4294967291ul };
+	for (size_t i = 0; i < sizeof(_PrimeSize) / sizeof(_PrimeSize[0]); ++i)
+	{
+		if (_PrimeSize[i] > size)
+		{
+			return _PrimeSize[i];
+		}
+	}
+	return _PrimeSize[(sizeof(_PrimeSize) / sizeof(_PrimeSize[0])) - 1];
+}
+
+template <class K, class V, class HashFuncer>
+HashTableNode<K, V>* HashTableBucket<K, V, HashFuncer>::Find(const K& key)const
+{
+	size_t index = this->_HashFuncer(key, this->_tables.size());
+	Node* cur = this->_tables[index];
+	while (cur)
+	{
+		if (cur->_key == key)
+		{
+			return cur;
+		}
+		cur = cur->_next;
+	}
+	return NULL;
+}
+
+template <class K, class V, class HashFuncer>
+bool HashTableBucket<K, V, HashFuncer>::Remove(const K& key)
+{
+	size_t index = this->_HashFuncer(key, this->_tables.size());
+	Node* cur = this->_tables[index];
+	Node* prev = NULL;
+	while (cur)
+	{
+		if (cur->_key == key)
+		{
+			//cur为第一个结点
+			if (cur == this->_tables[index])
+			{
+				this->_tables[index] = cur->_next;
+			}
+			//cur为最后一个结点
+			else if (cur->_next == NULL)
+			{
+				prev->_next = NULL;
+			}
+			//cur为中间结点
+			else
+			{
+				prev->_next = cur->_next;
+			}
+
+			delete cur;
+			cur = NULL;
+			--this->_size;
+			return true;
+		}
+		prev = cur;
+		cur = cur->_next;
+	}
+
+	return false;
+}
+
+template <class K, class V, class HashFuncer>
+void HashTableBucket<K, V, HashFuncer>::Swap(HashTableBucket<K, V, HashFuncer> htable)
+{
+	std::swap(this->_tables, htable._tables);
+	std::swap(this->_size, htable._size);
+}
+
+template <class K, class V, class HashFuncer>
+void HashTableBucket<K, V, HashFuncer>::PrintTables()const
+{
+	size_t tableSize = this->_tables.size();
+	for (size_t i = 0; i < tableSize; ++i)
+	{
+		printf("Tables[%d]->", i);
+		Node* cur = this->_tables[i];
+		while (cur)
+		{
+			cout << "(" << cur->_key << "," << cur->_value << ")->";
+			cur = cur->_next;
+		}
+		cout << "NULL" << endl;
+	}
+}
+
