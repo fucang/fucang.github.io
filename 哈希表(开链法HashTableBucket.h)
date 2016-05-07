@@ -1,0 +1,70 @@
+#pragma once
+#ifndef __HASHTABLE_BUCKET_H__
+#define __HASHTABLE_BUCKET_H__
+
+#include <vector>
+#include <string>
+
+template <class K>
+struct DefaultHashFuncer
+{
+	size_t operator()(const K& key)const
+	{
+		return key;
+	}
+};
+//模板特化
+template <>
+struct DefaultHashFuncer<std::string>
+{
+	size_t operator()(const std::string& key)const
+	{
+		size_t seed = 131;
+		size_t hash = 0;
+		const char* str = key.c_str();
+		while (*str)
+		{
+			hash = hash*seed + (*str++);
+		}
+		return hash & 0x7FFFFFFF;
+	}
+};
+
+template <class K, class V>
+struct HashTableNode
+{
+	K _key;
+	V _value;
+	HashTableNode<K, V>* _next;
+	HashTableNode(const K& key = K(),const V& value = V())
+		:_key(key), _value(value), _next(NULL)
+	{}
+};
+
+template <class K, class V, class HashFuncer = DefaultHashFuncer<K>>
+class HashTableBucket
+{
+	typedef HashTableNode<K, V> Node;
+public:
+	HashTableBucket();
+	~HashTableBucket();
+	HashTableBucket(const HashTableBucket<K, V, HashFuncer>& htable);
+	HashTableBucket<K, V, HashFuncer>& operator=(const HashTableBucket<K, V, HashFuncer>& htable);
+
+	bool Insert(const K& key, const V& value);
+	Node* Find(const K& key)const;
+	bool Remove(const K& key);
+	void PrintTables()const;
+	void Swap(HashTableBucket<K, V, HashFuncer> htable);
+
+protected:
+	void _CheckExpand();
+	size_t _HashFuncer(const K& key,size_t size)const;
+	static size_t _GetNextPrime(size_t size);
+protected:
+	std::vector<Node*> _tables;	 //Node* _tables[]
+	size_t _size;
+
+};
+
+#endif /*__HASHTABLE_BUCKET_H__*/
