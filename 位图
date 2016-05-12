@@ -1,0 +1,117 @@
+//BitMap.h
+#pragma once 
+#ifndef __BITMAP_H__
+#define __BITMAP_H__
+
+#include <vector>
+
+class BitMap
+{
+	class Reference; //声明Reference类
+public:
+	BitMap(size_t size = 0);
+	void Set(size_t pos, bool val = true);
+	void Reset(size_t pos);
+	void ReSize(size_t pos);
+	size_t Size()const;
+	bool Test(size_t pos)const;
+	bool operator[](size_t pos)const;
+	Reference operator[](size_t pos);
+
+public:
+	class Reference
+	{
+		friend class BitMap;
+	public:
+		Reference& operator=(const Reference& ref);
+		operator bool()const;
+		~Reference();
+	private:
+		Reference() : _Pbitset(NULL), _Mypos(0)
+		{}
+		Reference(BitMap& bitMap, size_t pos) : _Pbitset(&bitMap), _Mypos(pos)
+		{}
+	private:
+		BitMap *_Pbitset;	// pointer to the bitset
+		size_t _Mypos;	// position of element in bitset
+	};
+
+private:
+	std::vector<size_t> _array;
+	size_t _size;
+};
+
+#endif /*__BITMAP_H__*/
+
+//BitMap.hpp:
+#define _CRT_SECURE_NO_WARNINGS 1
+
+#include "BitMap.h"
+
+BitMap::BitMap(size_t size) : _size(0)
+{
+	this->_array.resize(size / 32 + 1);	
+}
+void BitMap::Set(size_t pos, bool val)
+{
+	size_t index = pos >> 5;
+	size_t number = pos % 32;
+	if (!val)
+	{
+		this->Reset(pos);
+	}
+	else if (!(this->_array[index] & (1 << number)))
+	{
+		this->_array[index] |= (1 << number);
+		++this->_size;
+	}
+}
+void BitMap::Reset(size_t pos)
+{
+	size_t index = pos >> 5;
+	size_t number = pos % 32;
+	if (this->_array[index] & (1 << number))
+	{
+		this->_array[index] &= (~(1 << number));
+		--this->_size;
+	}
+}
+void BitMap::ReSize(size_t size)
+{
+	this->_array.resize(size / 32 + 1);
+	
+}
+size_t BitMap::Size()const
+{
+	return this->_size;
+}
+bool BitMap::Test(size_t pos)const
+{
+	size_t index = pos >> 5;
+	size_t number = pos % 32;
+	return this->_array[index] & (1 << number);
+}
+bool BitMap::operator[](size_t pos)const
+{
+	size_t index = pos >> 5;
+	size_t number = pos % 32;
+	return this->_array[index] & (1 << number);
+}
+
+BitMap::Reference BitMap::operator[](size_t pos)
+{
+	return Reference(*this, pos);
+}
+
+BitMap::Reference& BitMap::Reference::operator=(const Reference& ref)
+{
+	this->_Pbitset->Set(this->_Mypos, (bool)ref);
+	return *this;
+}
+
+BitMap::Reference::operator bool()const
+{
+	return this->_Pbitset->Test(this->_Mypos);
+}
+BitMap::Reference::~Reference()
+{}
