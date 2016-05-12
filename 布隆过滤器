@@ -1,0 +1,96 @@
+//BloomFilter.h
+#pragma once
+#ifndef __BLOOM_FILTER_H__
+#define __BLOOM_FILTER_H__
+
+#include <string>
+#include "BitMap.hpp"
+#include "HashFuncer.h"
+
+template <class K = std::string, class HashFuncer1 = __HashFuncer1<K>,
+class HashFuncer2 = __HashFuncer2<K>, class HashFuncer3 = __HashFuncer3<K>,
+class HashFuncer4 = __HashFuncer4<K>, class HashFuncer5 = __HashFuncer5<K>>
+class BloomFilter
+{
+public:
+	BloomFilter(size_t size = 0);
+	~BloomFilter();
+	void Set(const K& key);
+	bool Test(const K& key)const;
+
+protected:
+	BitMap _bitMap;
+	size_t _capacity;
+};
+
+#endif /*__BLOOM_FILTER_H__*/
+
+//BloomFilter.hpp
+#pragma once 
+#ifndef __BLOOM_FILTER_HPP__
+#define __BLOOM_FILTER_HPP__
+
+#include "BloomFilter.h"
+
+/*
+*protected:
+*	BitMap _bitMap;
+*	size_t _capacity;
+*/
+template <class K, class HashFuncer1,class HashFuncer2, 
+class HashFuncer3,class HashFuncer4, class HashFuncer5>
+BloomFilter<K, HashFuncer1, HashFuncer2, HashFuncer3, 
+HashFuncer4, HashFuncer5>::BloomFilter(size_t size)
+{
+	this->_capacity = GetPrimeSize(size * 5);
+	this->_bitMap.ReSize(this->_capacity);
+}
+
+template <class K, class HashFuncer1, class HashFuncer2,
+class HashFuncer3, class HashFuncer4, class HashFuncer5>
+BloomFilter<K, HashFuncer1, HashFuncer2, HashFuncer3, 
+HashFuncer4, HashFuncer5>::~BloomFilter()
+{}
+
+template <class K, class HashFuncer1, class HashFuncer2,
+class HashFuncer3, class HashFuncer4, class HashFuncer5>
+void BloomFilter<K, HashFuncer1, HashFuncer2, HashFuncer3, 
+HashFuncer4, HashFuncer5>::Set(const K& key)
+{
+	size_t index1 = HashFuncer1()(key) % this->_capacity;
+	size_t index2 = HashFuncer2()(key) % this->_capacity;
+	size_t index3 = HashFuncer3()(key) % this->_capacity;
+	size_t index4 = HashFuncer4()(key) % this->_capacity;
+	size_t index5 = HashFuncer5()(key) % this->_capacity;
+	this->_bitMap.Set(index1);
+	this->_bitMap.Set(index2);
+	this->_bitMap.Set(index3);
+	this->_bitMap.Set(index4);
+	this->_bitMap.Set(index5);
+
+}
+template <class K, class HashFuncer1, class HashFuncer2,
+class HashFuncer3, class HashFuncer4, class HashFuncer5>
+bool BloomFilter<K, HashFuncer1, HashFuncer2, HashFuncer3,
+HashFuncer4, HashFuncer5>::Test(const K& key)const
+{
+	size_t index1 = HashFuncer1()(key) % this->_capacity;
+	size_t index2 = HashFuncer2()(key) % this->_capacity;
+	size_t index3 = HashFuncer3()(key) % this->_capacity;
+	size_t index4 = HashFuncer4()(key) % this->_capacity;
+	size_t index5 = HashFuncer5()(key) % this->_capacity;
+	if (!this->_bitMap.Test(index1))
+		return false;
+	if (!this->_bitMap.Test(index2))
+		return false;	
+	if (!this->_bitMap.Test(index3))
+		return false;	
+	if (!this->_bitMap.Test(index4))
+		return false;	
+	if (!this->_bitMap.Test(index5))
+		return false;
+
+	return true;
+}
+
+#endif /*__BLOOM_FILTER_HPP__*/
