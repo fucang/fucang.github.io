@@ -1,0 +1,170 @@
+struct RandomListNode 
+{
+	int label;
+	RandomListNode* next;
+	RandomListNode* random;
+	RandomListNode(int x) : label(x), next(NULL), random(NULL) 
+	{}
+};
+//方法1（O(n^2)）
+RandomListNode* CopyNext(RandomListNode* pHead)
+{
+	if (pHead == NULL)
+	{
+		return NULL;
+	}
+	RandomListNode* head = new RandomListNode(pHead->label);
+	RandomListNode* curDest = head;
+	RandomListNode* curSrc = pHead->next;
+	while (curSrc)
+	{
+		curDest->next = new RandomListNode(curSrc->label);
+		curDest = curDest->next;
+		curSrc = curSrc->next;
+	}
+	return head;
+}
+RandomListNode* CopyRandom(RandomListNode* pHead, RandomListNode* head, RandomListNode* random)
+{
+	size_t iCount = 0;
+	RandomListNode* cur = pHead;
+	while (cur != random)
+	{
+		cur = cur->next;
+		++iCount;
+	}
+	cur = head;
+	while (iCount--)
+	{
+		cur = cur->next;
+	}
+	return cur;
+}
+
+
+RandomListNode* Clone_N_2(RandomListNode* pHead)
+{
+	if (pHead == NULL)
+	{
+		return NULL;
+	}
+	//复制next域
+	RandomListNode* head = CopyNext(pHead);
+	//复制random域
+	RandomListNode* curDest = head;
+	RandomListNode* curSrc = pHead;
+	while (curSrc)
+	{
+		if (curSrc->random != NULL)
+		{
+			curDest->random = CopyRandom(pHead, head, curSrc->random);
+		}
+		curDest = curDest->next;
+		curSrc = curSrc->next;
+	}
+	return head;
+}
+
+//方法二(O(n))
+//复制
+RandomListNode* CloneCopy(RandomListNode* pHead)
+{
+	if (pHead == NULL)
+	{
+		return NULL;
+	}
+	RandomListNode* cur = pHead;
+	while (cur)
+	{
+		RandomListNode* newNode = new RandomListNode(cur->label);
+		newNode->next = cur->next;
+		cur->next = newNode;
+		cur = cur->next->next;
+	}
+	return pHead;
+}
+//链接
+RandomListNode* CloneConnect(RandomListNode* pHead)
+{
+	if (pHead == NULL)
+	{
+		return NULL;
+	}
+	RandomListNode* cur = pHead;
+	while (cur)
+	{
+		if (cur->random != NULL)
+		{
+			cur->next->random = cur->random->next;
+		}
+		cur = cur->next->next;
+	}
+}
+//分解
+RandomListNode* CloneResolve(RandomListNode* pHead)
+{
+	if (pHead == NULL)
+	{
+		return NULL;
+	}
+	RandomListNode* head = pHead->next;
+	RandomListNode* curDest = head;
+	RandomListNode* curSrc = pHead;
+	while (curSrc)
+	{
+		curSrc->next = curDest->next;
+		if (curSrc->next != NULL)
+		{
+			curDest->next = curSrc->next->next;
+		}
+		curDest = curDest->next;
+		curSrc = curSrc->next;
+	}
+	return head;
+}
+RandomListNode* Clone_N(RandomListNode* pHead)
+{
+	if (pHead == NULL)
+	{
+		return NULL;
+	}
+	//复制
+	CloneCopy(pHead);
+	//链接random域
+	CloneConnect(pHead);
+	//分解
+	RandomListNode* head = CloneResolve(pHead); 
+	return head;
+}
+
+//输出
+void PrintListNextRandom(RandomListNode* pHead)
+{
+	if (pHead == NULL)
+	{
+		return;
+	}
+	RandomListNode* cur = pHead;
+	while (cur)
+	{
+		std::cout << "(" << cur->label << ", ";
+		if (cur->random)
+		{
+			std::cout << cur->random->label << ", ";
+		}
+		else
+		{
+			std::cout << "NULL , ";
+		}
+		if (cur->next)
+		{
+			std::cout << cur->next->label << ") -> ";
+		}
+		else
+		{
+			std::cout << "NULL )";
+		}
+		cur = cur->next;
+	}
+	std::cout << std::endl;
+}
