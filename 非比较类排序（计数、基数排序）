@@ -1,0 +1,89 @@
+//计数排序（只能用于整形）
+void CountSort(int* array, size_t size)
+{
+	assert(array);
+	//求数组中的最大数和最小数
+	int min = array[0];
+	int max = array[0];
+	for (size_t i = 1; i < size; ++i)
+	{
+		if (array[i] < min)
+		{
+			min = array[i];
+		}
+		if (array[i] > max)
+		{
+			max = array[i];
+		}
+	}
+	int* count = new int[max - min + 1];
+	memset(count, 0, sizeof(int)*(max - min + 1));
+	for (size_t i = 0; i < size; ++i)
+	{
+		++count[array[i] - min];
+	}
+	size_t index = 0;
+	for (size_t i = 0; i < max - min + 1; ++i)
+	{
+		while (count[i]--)
+		{
+			array[index++] = i + min;
+		}
+	}
+	delete[] count;
+}
+
+//基数排序（只能用于正整数）
+int GetRadix(int* array, size_t size)//求得数组中最大数的位数
+{
+	assert(array);
+	int radix = 1;
+	int max = 0;
+	for (size_t i = 0; i < size; ++i)
+	{
+		if (array[i] > max)
+		{
+			max = array[i];
+		}
+	}
+	while (max=max/10)
+	{
+		++radix;
+	}
+	return radix;
+}
+void RadixSort(int* array, size_t size)
+{
+	assert(array);
+	int maxRadix = GetRadix(array, size);
+	int* start = new int[10];
+	int* count = new int[10];
+	int* bucket = new int[size];	
+	for (int iRadix = 0; iRadix < maxRadix; ++iRadix)//对每一位进行排序
+	{
+		memset(start, 0, sizeof(int)* 10);
+		memset(count, 0, sizeof(int)* 10);
+		//计算每一位中0到9出现的次数
+		for (size_t i = 0; i < size; ++i)
+		{
+			int num = (array[i] / (int)(pow(10, iRadix))) % 10;
+			++count[num];
+		}
+		//计算每一位开始的位置下标
+		for (int i = 1; i < 10; ++i)
+		{
+			start[i] = start[i - 1] + count[i - 1];
+		}
+		//对每一位进行排序
+		for (size_t i = 0; i < size; ++i)
+		{
+			int num = (array[i] / (int)(pow(10, iRadix))) % 10;
+			bucket[start[num]++] = array[i];
+		}
+		//将排序结果拷回array
+		for (size_t i = 0; i < size; ++i)
+		{
+			array[i] = bucket[i];
+		}
+	}
+}
