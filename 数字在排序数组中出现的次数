@@ -1,0 +1,75 @@
+class Solution {
+public:
+    int GetNumberOfK(vector<int> data ,int k) 
+    {
+        int left = 0;
+        int right = data.size() - 1;
+        int first = GetFirstNum(data, left, right, k);
+        int last = GetLastNum(data, left, right, k);
+        if (first == -1 && last == -1)//不存在
+        {
+            return 0;
+        }
+        return last - first + 1;
+    }
+    int GetFirstNum(const vector<int>& data, int left, int right, int k)
+    {
+        if (left > right)
+        {
+            return -1;
+        }
+        int mid = left - (left - right) / 2;
+        if (data[mid] == k)//中间的数字等于k
+        {
+            if (mid - 1 >= 0 && data[mid - 1] == k)
+                //前面还有数字等于k
+            {
+                return GetFirstNum(data, left, mid - 1, k);
+            }
+            else //mid为最前面的等于k
+            {
+                return mid;
+            }
+        }
+        else if (data[mid] < k)
+            //k位于mid的后面
+        {
+            return GetFirstNum(data, mid + 1, right, k);
+        }
+        else
+            //k位于mid的前面
+        {
+            return GetFirstNum(data, left, mid - 1, k);
+        }
+    }
+    int GetLastNum(const vector<int>& data, int left, int right, int k)
+    {
+        if (left > right)
+        {
+            return -1;
+        }
+        int mid = left - (left - right) / 2;
+        if (data[mid] == k)//中间的数字等于k
+        {
+            if (mid + 1 <= right && data[mid + 1] == k)
+                //后面还有数字等于k
+            {
+                return GetLastNum(data, mid + 1, right, k);
+            }
+            else //mid为最后面的等于k
+            {
+                return mid;
+            }
+        }
+        else if (data[mid] < k)
+            //k位于mid的后面
+        {
+            return GetLastNum(data, mid + 1, right, k);
+        }
+        else
+            //k位于mid的前面
+        {
+            return GetLastNum(data, left, mid - 1, k);
+        }
+    }
+};
