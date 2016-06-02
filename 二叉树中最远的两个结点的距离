@@ -1,0 +1,117 @@
+//解法一：求出每个结点作为根结点时的最远距离
+struct BinTreeNode
+{
+	int _data;
+	BinTreeNode* _left;
+	BinTreeNode* _right;
+	BinTreeNode(int data = 0) :_data(data), _left(NULL), _right(NULL)
+	{}
+};
+
+int DepthBin(BinTreeNode* root)
+{
+	if (root == NULL)
+		return 0;
+	int left = DepthBin(root->_left);
+	int right = DepthBin(root->_right);
+	return left > right ? left + 1 : right + 1;
+}
+
+void FindMaxLenOfBinTree(BinTreeNode* root, int& maxPath)
+{
+	if (root == NULL)
+		return;
+	int leftDepth = DepthBin(root->_left);
+	int rightDepth = DepthBin(root->_right);
+	if (maxPath < leftDepth + rightDepth)
+	{
+		maxPath = leftDepth + rightDepth;
+	}
+	FarestRoot(root->_left, maxPath);
+	FarestRoot(root->_right, maxPath);
+}
+
+int FindMaxLen(BinTreeNode* root)
+{
+	int maxPath = 0;
+	FarestRoot(root, maxPath);
+	return maxPath;
+}
+
+//解法二：代码注释很详细
+struct BinTreeNode
+{
+	int _data;
+	int _maxLeft;
+	int _maxRight;
+	BinTreeNode* _left;
+	BinTreeNode* _right;
+	BinTreeNode(int data = 0) 
+		:_data(data), _maxLeft(0), _maxRight(0)
+		,_left(NULL), _right(NULL)
+	{}
+};
+
+void FindMaxLenOfBinTree(BinTreeNode* root, int& maxLen)
+{
+	if (root == NULL)
+		return;
+
+	//左子树为空，该节点的左边最长距离为0
+	if (root->_left == NULL)
+	{
+		root->_maxLeft = 0;
+	}
+	//右子树为空，该节点的右边最长距离为0
+	if (root->_right == NULL)
+	{
+		root->_maxRight = 0;
+	}
+	if (root->_left != NULL)
+	{
+		FindMaxLenOfBinTree(root->_left, maxLen);
+	}
+	if (root->_right != NULL)
+	{
+		FindMaxLenOfBinTree(root->_right, maxLen);
+	}
+	if (root->_left != NULL)
+	{
+		int tmp = 0;
+		if (root->_left->_maxLeft > root->_left->_maxRight)
+		{
+			tmp = root->_left->_maxLeft;
+		}
+		else
+		{
+			tmp = root->_left->_maxRight;
+		}
+		root->_maxLeft = tmp + 1;
+	}
+	if (root->_right != NULL)
+	{
+		int tmp = 0;
+		if (root->_right->_maxLeft > root->_right->_maxRight)
+		{
+			tmp = root->_right->_maxLeft;
+		}
+		else
+		{
+			tmp = root->_right->_maxRight;
+		}
+		root->_maxRight = tmp + 1;
+	}
+	if (root->_maxLeft + root->_maxRight > maxLen)
+	{
+		maxLen = root->_maxLeft + root->_maxRight;
+	}
+}
+
+int FindMaxLen(BinTreeNode* root)
+{
+	int maxLen = 0;
+	FindMaxLenOfBinTree(root, maxLen);
+	return maxLen;
+}
+
+
