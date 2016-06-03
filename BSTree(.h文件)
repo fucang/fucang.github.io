@@ -1,0 +1,43 @@
+#pragma once
+#ifndef __BSTREE_H__
+#define __BSTREE_H__
+#include <iostream>
+
+template <typename K, typename V>
+struct BSNode
+{
+	K _key;
+	V _value;
+	BSNode<K, V>* _left;
+	BSNode<K, V>* _right;
+	BSNode(const K& key = K(), const V& value = V()) 
+		:_key(key), _value(value), _left(NULL), _right(NULL)
+	{}
+};
+
+template <typename K, typename V>
+class BSTree
+{
+	typedef BSNode<K, V> Node;
+public:
+	BSTree();
+	bool Insert(const K& key, const V& value = V());
+	Node* Find(const K& key);
+	bool Remove(const K& key);
+	void InOrder()const;
+
+	bool Insert_R(const K& key, const V& value = V());
+	Node* Find_R(const K& key);
+	bool Remove_R(const K& key);
+
+protected:
+	static void _InOrder(Node* root);
+	static bool _Insert_R(Node* &root, const K& key, const V& value = V());
+	static Node* _Find_R(Node* &root, const K& key);
+	static bool _Remove_R(Node* &root, const K& key);
+
+protected:
+	Node* _root;
+};
+
+#endif /*__BSTREE_H__*/
