@@ -1,0 +1,317 @@
+#define _CRT_SECURE_NO_WARNINGS 1
+#include "BSTree.h"
+
+template <typename K,typename V>
+BSTree<K, V>::BSTree() :_root(NULL)
+{}
+
+template <typename K, typename V>
+bool BSTree<K, V>::Insert(const K& key, const V& value = V())
+{
+	if (this->_root == NULL)
+	{
+		this->_root = new Node(key, value);
+		return true;
+	}
+	Node* cur = this->_root;
+	Node* parent = NULL;
+	while (cur)
+	{
+		if (key < cur->_key)//往左子树走
+		{
+			parent = cur;
+			cur = cur->_left;
+		}
+		else if (key > cur->_key)//往右子树走
+		{
+			parent = cur;
+			cur = cur->_right;
+		}
+		else//已经存在，无需插入
+		{
+			return false;
+		}
+	}
+	if (key < parent->_key)
+	{
+		parent->_left = new Node(key, value);
+	}
+	else
+	{
+		parent->_right = new Node(key, value);
+	}
+	return true;
+}
+
+template <typename K, typename V>
+BSNode<K, V>* BSTree<K, V>::Find(const K& key)
+{
+	if (this->_root == NULL)
+	{
+		return NULL;
+	}
+	Node* cur = this->_root;
+	while (cur)
+	{
+		if (cur->_key == key)
+		{
+			return cur;
+		}
+		else if (key < cur->_key)
+		{
+			cur = cur->_left;
+		}
+		else
+		{
+			cur = cur->_right;
+		}
+	}
+	return NULL;
+}
+
+template <typename K, typename V>
+bool BSTree<K, V>::Remove(const K& key)
+{
+	/*
+	*1、删除的结点的树为空
+	*2、删除的结点的树只有一个结点
+	*3、删除的结点没有左子树
+	*4、删除的结点没有右子树
+	*5、删除的结点既有左子树又有右子树
+	*	1）、找该结点的右子结点的子树的最左结点
+	*	2）、找该结点的左子结点的子树的最右结点
+	*/
+	if (this->_root == NULL)
+		return false;
+	if (this->_root->_left == NULL && this->_root->_right == NULL && this->_root->_key == key)//要删除根节点
+	{
+		delete this->_root;
+		this->_root = NULL;
+		return true;
+	}
+	Node* cur = this->_root;
+	Node* parent = NULL;
+	while (cur)
+	{
+		if (key < cur->_key)
+		{
+			parent = cur;
+			cur = cur->_left;
+		}
+		else if (key > cur->_key)
+		{
+			parent = cur;
+			cur = cur->_right;
+		}
+		else//相等，要删除
+		{
+			Node* del = cur;
+
+			//删除的结点没有左子树
+			if (cur->_left == NULL)
+			{
+				if (parent == NULL) //删除的结点为根节点
+				{
+					this->_root = cur->_right;
+				}
+				else
+				{
+					//cur为parent的左
+					if (cur->_key < parent->_key)
+					{
+						parent->_left = cur->_right;
+					}
+					else //cur为parent的右
+					{
+						parent->_right = cur->_right;
+					}
+				}
+				
+			}
+
+			//删除的结点没有右子树
+			else if (cur->_right == NULL)
+			{
+				if (parent == NULL)//删除的结点为根节点
+				{
+					this->_root = cur->_left;
+				}
+				else
+				{
+					//cur为parent的左
+					if (cur->_key < parent->_key)
+					{
+						parent->_left = cur->_left;
+					}
+					else //cur为parent的右
+					{
+						parent->_right = cur->_left;
+					}
+				}
+			}
+
+			//删除的结点既有左子树又有右子树
+			else
+			{
+				Node* firstLeft = cur->_right; //cur->_right肯定不为空
+
+				//找最左
+				while (firstLeft->_left)
+				{
+					parent = firstLeft;
+					firstLeft = firstLeft->_left;
+				}
+				swap(cur->_key, firstLeft->_key);
+				swap(cur->_value, firstLeft->_key);
+				del = firstLeft;
+				if (firstLeft == cur->_right)//firstLeft没有左子树
+				{
+					cur->_right = firstLeft->_right;
+				}
+				else
+				{
+					parent->_left = NULL;
+				}
+			
+			}
+			delete del;
+			del = NULL;
+			return true;
+		}//相等，删除
+
+	}/*while*/
+
+	//没找到
+	return false;
+}
+
+template <typename K, typename V>
+void BSTree<K, V>::InOrder()const
+{
+	_InOrder(this->_root);
+	cout << endl;
+}
+
+template <typename K, typename V>
+void BSTree<K, V>::_InOrder(Node* root)
+{
+	if (root == NULL)
+		return;
+	_InOrder(root->_left);
+	cout << root->_key << " ";
+	_InOrder(root->_right);
+}
+
+template <typename K, typename V>
+bool BSTree<K, V>::Insert_R(const K& key, const V& value = V())
+{
+	return _Insert_R(this->_root, key, value);
+}
+
+template <typename K, typename V>
+BSNode<K, V>* BSTree<K, V>::Find_R(const K& key)
+{
+	return _Find_R(this->_root, key);
+}
+
+template <typename K, typename V>
+bool BSTree<K, V>::Remove_R(const K& key)
+{
+	return _Remove_R(this->_root, key);
+}
+
+template <typename K, typename V>
+bool BSTree<K, V>::_Insert_R(BSNode<K, V>* &root, const K& key, const V& value = V())
+{
+	if (root == NULL)
+	{
+		root = new Node(key, value);
+		return true;
+	}
+	if (key < root->_key)
+	{
+		return _Insert_R(root->_left, key, value);
+	}
+	else if (key > root->_key)
+	{
+		return _Insert_R(root->_right, key, value);
+	}
+	else
+	{
+		return false;
+	}
+}
+
+template <typename K, typename V>
+BSNode<K, V>* BSTree<K, V>::_Find_R(BSNode<K, V>* &root, const K& key)
+{
+	if (root == NULL)
+	{
+		return NULL;
+	}
+	if (key == root->_key)
+	{
+		return root;
+	}
+	else if (key < root->_key)
+	{
+		return _Find_R(root->_left, key);
+	}
+	else
+	{
+		return _Find_R(root->_right, key);
+	}
+}
+
+template <typename K, typename V>
+bool BSTree<K, V>::_Remove_R(BSNode<K, V>* &root, const K& key)
+{
+	if (root == NULL)
+	{
+		return false;
+	}
+	if (key < root->_key)
+	{
+		return _Remove_R(root->_left, key);
+	}
+	else if (key > root->_key)
+	{
+		return _Remove_R(root->_right, key);
+	}
+
+	//删除
+	Node* del = root;
+	if (root->_left == NULL)
+	{
+		root = root->_right;
+		delete del;
+		del = NULL;
+		return true;
+	}
+	else if (root->_right == NULL)
+	{
+		root = root->_left;
+		delete del;
+		del = NULL;
+		return true;
+	}
+	else
+	{
+		Node* firstLeft = root->_right;
+		while (firstLeft->_left)
+		{
+			firstLeft = firstLeft->_left;
+		}
+		swap(firstLeft->_key, root->_key);
+		swap(firstLeft->_value, root->_value);
+		return _Remove_R(root->_right, key);
+		/*
+		*错误方法：
+		*del = firstLeft;
+		*firstLeft = firstLeft->_right;
+		*delete del;
+		*del = NULL;
+		*return true;
+		*/
+	}
+}
