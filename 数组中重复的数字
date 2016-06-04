@@ -1,0 +1,52 @@
+
+/*
+*在一个长度为n的数组里的所有数字都在0到n-1的范围内。 
+*数组中某些数字是重复的，但不知道有几个数字是重复的。
+*也不知道每个数字重复几次。请找出数组中任意一个重复的数字。 
+*例如，如果输入长度为7的数组{2,3,1,0,2,5,3}，那么对应的输出
+*是重复的数字2或者3
+*/
+
+// Parameters:
+//        numbers:     an array of integers
+//        length:      the length of array numbers
+//        duplication: (Output) the duplicated number in the array number
+// Return value:       true if the input is valid, and there are some duplications 
+//						in the array number  otherwise false
+
+/*
+*判断数组的下标i和numbers[i]是否相等，若想等，则i++,这是第一次遇到数字i
+*否则，看numbers[i]是否为numbers[numbers[i]],若想等则已找到重复数字，
+*否则和numbers[i]交换，这样要找到重复数字，肯定是已经第二次遇到了这个数字
+*/
+
+bool duplicate(int numbers[], int length, int* duplication)
+{
+	assert(numbers);
+	assert(duplication);
+	if (length <= 1)
+	{
+		return false;
+	}
+	int i = 0;
+	while (i < length)
+	{
+		if (numbers[i] == i)
+		{
+			++i;
+		}
+		else
+		{
+			if (numbers[numbers[i]] == numbers[i])
+			{
+				*duplication = numbers[i];
+				return true;
+			}
+			else
+			{
+				swap(numbers[numbers[i]], numbers[i]);
+			}
+		}
+	}
+	return false;//没有重复数字，正好是0,1,...n-1
+}
