@@ -1,0 +1,43 @@
+#pragma once
+#ifndef __AVL_TREE_H__
+#define __AVL_TREE_H__
+
+template <typename K,typename V>
+struct AVLTreeNode
+{
+	K _key;
+	V _value;
+	int _bf;//平衡因子 -1,0,1,等于右子树的深度减去做子树的深度
+	AVLTreeNode* _parent;
+	AVLTreeNode* _left;
+	AVLTreeNode* _right;
+	AVLTreeNode(const K& key = K(),const V& value = V()) 
+		:_key(key), _value(value), _bf(0)
+		, _parent(NULL), _left(NULL), _right(NULL)
+	{}
+};
+
+template <typename K,typename V>
+class AVLTree
+{
+	typedef AVLTreeNode<K, V> Node;
+public:
+	AVLTree();
+	bool Insert(const K& key, const V& value = V());
+
+	bool IsBalance();
+
+	void InOrder(); //基于三叉链的中序遍历
+
+protected:
+	static void _RotateL(Node* &parent);
+	static void _RotateR(Node* &parent);
+	static void _RotateLR(Node* &parent);
+	static void _RotateRL(Node* &parent);
+	static bool _IsBalance(Node* root);
+	static int _Heigh(Node* root);
+protected:
+	Node* _root;
+};
+
+#endif /*__AVL_TREE_H__*/
