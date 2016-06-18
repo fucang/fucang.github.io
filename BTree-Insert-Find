@@ -1,0 +1,122 @@
+template <typename K, int M>
+bool BTree<K, M>::Insert(const K& key)
+{
+	//尚没有结点，直接改_root即可
+	if (this->_root == NULL)
+	{
+		this->_root = new Node();
+		this->_root->_keys[0] = key;
+		++this->_root->_size;
+		return true;
+	}
+	Pair<K,M> pair = this->Find(key);
+	if (pair._second != -1)
+	{
+		return -1; //已存在，无需插入
+	}
+	Node* cur = pair._first;
+	Node* parent = cur->_parent;
+	K insertKey = key;
+	while (true)
+	{
+		//进行插入
+		this->_InsertKey(cur, insertKey);
+
+		//小于M，无需分裂
+		if (cur->_size < M)
+		{
+			return true;
+		}
+
+		//分裂调整
+		int mid = (cur->_size - 1) / 2;//减一是为了防止M为偶数
+		Node* right = new Node();
+		int index = 0;
+		//拷贝_keys[]
+		for (int i = mid + 1; i < cur->_size;++i)
+		{
+			right->_keys[index++] = cur->_keys[i];
+			++right->_size;
+		}
+		index = 0;
+		//拷贝_subs[]
+		for (int i = mid + 1; i <= cur->_size; ++i)
+		{
+			right->_subs[index++] = cur->_subs[i];
+			if (cur->_subs[i])
+				cur->_subs[i]->_parent = right;
+		}
+		insertKey = cur->_keys[mid];
+		cur->_size = (cur->_size - 1) / 2;
+		if (parent == NULL)//cur为根节点
+		{
+			Node* tmp = new Node();
+			tmp->_keys[0] = insertKey;
+			++tmp->_size;
+			tmp->_subs[0] = cur;
+			tmp->_subs[1] = right;
+			cur->_parent = right->_parent = tmp;
+			this->_root = tmp;
+			break;
+		}
+		else
+		{
+			right->_parent = parent;
+			//parent->_subs[cur->_size + 1] = right;错误
+			index = M - 1;
+			while (parent->_subs[index] != cur)
+			{
+				parent->_subs[index + 1] = parent->_subs[index];
+				--index;
+			}
+			parent->_subs[index + 1] = right;
+			cur = parent;
+			parent = cur->_parent;
+		}
+	}
+	return true;
+}
+
+template <typename K,int M>
+Pair<K, M> BTree<K, M>::Find(const K& key)const
+{
+	Node* cur = this->_root;
+	Node* parent = NULL;
+	int index = 0;
+	while (cur)
+	{
+		while (index < cur->_size)
+		{
+			if (cur->_keys[index] < key)
+			{
+				++index;
+			}
+			else if (cur->_keys[index] == key)
+			{
+				return Pair<K,M>(cur, index);
+			}
+			else
+			{
+				break;
+			}
+		}
+		parent = cur;
+		cur = cur->_subs[index];
+		index = 0;
+	}
+	return Pair<K, M>(parent, -1);
+}
+
+template <typename K,int M>
+void BTree<K, M>::_InsertKey(Node* cur, const K& key)
+{
+	//直接插入法
+	int index = cur->_size - 1;
+	while (index >= 0 && key < cur->_keys[index])
+	{
+		cur->_keys[index + 1] = cur->_keys[index];
+		--index;
+	}
+	cur->_keys[index + 1] = key;
+	++cur->_size;
+}
